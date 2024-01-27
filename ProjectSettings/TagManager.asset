@@ -3,16 +3,19 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags: []
+  tags:
+  - Terrain
+  - SelectedBuildingPart
+  - BuildingPart
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - SelectedBuildingPart
   - Water
   - UI
-  - 
-  - 
+  - BuildingPart
+  - Terrain
   - 
   - 
   - 
