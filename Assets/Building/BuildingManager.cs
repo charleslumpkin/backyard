@@ -7,6 +7,7 @@ public class BuildingManager : MonoBehaviour
     public bool isBuilding = false;
     public GameObject currentBuildingPart;
     public List<GameObject> buildingGroups = new List<GameObject>();
+    public int totalParts = 0;
 
     
     // we need to come back and update thsi based on the size of the buildingPartsArray in the BuildingGroup

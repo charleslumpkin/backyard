@@ -343,7 +343,7 @@ GameObject:
   - component: {fileID: 587107938}
   - component: {fileID: 587107939}
   m_Layer: 0
-  m_Name: Camera
+  m_Name: CharacterCam
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -451,6 +451,7 @@ MonoBehaviour:
   isBuilding: 0
   currentBuildingPart: {fileID: 0}
   buildingGroups: []
+  totalParts: 0
   maxBuildingGroupDistance: 20
 --- !u!1 &705507993
 GameObject:
@@ -725,7 +726,7 @@ TerrainCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_ProvidesContacts: 0
+  m_ProvidesContacts: 1
   m_Enabled: 1
   serializedVersion: 2
   m_TerrainData: {fileID: 15600000, guid: 0ff6692dee7f74264b426a4aaae5fed1, type: 2}
@@ -936,6 +937,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5705325161911919551, guid: dcb88d8c26ef34d5cbf975042b8866e0, type: 3}
+      propertyPath: m_ProvidesContacts
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -962,7 +967,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   buildingPartID: 0
+  enableGizmos: 0
+  mass: 10
+  totalSupportedMass: 0
+  maxSupporatbleMass: 80
+  supportDistance: 10
+  isTouchingGround: 0
   isVerticalSupport: 0
+  isOverloaded: 0
+  supportedBuildingParts: []
+  supportingBuildingParts: []
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
