@@ -181,12 +181,14 @@ public class BuildingGroup : MonoBehaviour
             }
         }
 
-        GameObject buildingPart = Instantiate(newBuildingPart, newBuildingPartCoordinate, Quaternion.identity);
+        GameObject buildingPart = Instantiate(newBuildingPart, newBuildingPartCoordinate, newBuildingPart.transform.rotation);
         buildingPart.transform.parent = transform;
         buildingPart.transform.name = "BP-" + currentID;
         buildingPart.layer = LayerMask.NameToLayer("BuildingPart");
+        buildingPart.transform.tag = "BuildingPart";    
         buildingPart.GetComponent<BuildingPart>().SetBuildingPartID(currentID);
         buildingPart.GetComponent<BuildingPart>().localPosition = ((int)buildingPart.transform.localPosition.x, (int)buildingPart.transform.localPosition.y, (int)buildingPart.transform.localPosition.z);
+        buildingPart.GetComponent<Renderer>().material.color = Color.white;
 
         ExpandMatrixAndInsertPart(buildingPart.transform.localPosition, buildingPart);
     }

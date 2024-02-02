@@ -159,13 +159,19 @@ public class BuildingManager : MonoBehaviour
                 if (hit.collider.CompareTag("Terrain") || hit.collider.CompareTag("BuildingPart"))
                 {
                     hit.point -= direction * 0.01f;
-                    hit.point = new Vector3((int)hit.point.x + 0.5f, (int)hit.point.y, (int)hit.point.z + 0.5f);
+                    hit.point = new Vector3((int)hit.point.x + 0.5f, (int)hit.point.y + 0.5f, (int)hit.point.z + 0.5f);
                     // Check if the raycast length is less than 10f
                     if (hit.distance < 10f)
                     {
                         // Set the position of the currentBuildingPart to the hit point
                         currentBuildingPart.transform.position = hit.point;
+
                         currentBuildingPart.SetActive(true);
+
+                        Color greenTrans = new Color(0f, 1f, 0f, 0.7f);
+                        
+                        currentBuildingPart.GetComponent<Renderer>().material.color = greenTrans;
+                        
 
                         if (Input.mouseScrollDelta.y != 0)
                         {
@@ -193,7 +199,7 @@ public class BuildingManager : MonoBehaviour
 
                             // Set the currentBuildingPart variable to the new selected part
                             currentBuildingPart = selectedPart;
-                            currentBuildingPart.SetActive(false);
+                            currentBuildingPart.SetActive(true);
                         }
 
                         if (Input.GetKeyDown(KeyCode.R) && !isRotating)
@@ -211,6 +217,7 @@ public class BuildingManager : MonoBehaviour
                     }
                     else
                     {
+
                         currentBuildingPart.SetActive(false);
                     }
 
@@ -222,6 +229,7 @@ public class BuildingManager : MonoBehaviour
         }
         else
         {
+
             currentBuildingPart.SetActive(false);
         }
     }
