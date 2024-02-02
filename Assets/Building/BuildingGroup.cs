@@ -34,6 +34,12 @@ public class BuildingGroup : MonoBehaviour
     public int bpOffsetY = 0;
     public int bpOffsetZ = 0;
 
+    public void RemoveBuildingPartFromMatrix((int x, int y, int z) bpCoord)
+    {
+        if (bpCoord.x >= 0 && bpCoord.x < bpMatrix.GetLength(0) && bpCoord.y >= 0 && bpCoord.y < bpMatrix.GetLength(1) && bpCoord.z >= 0 && bpCoord.z < bpMatrix.GetLength(2))
+            bpMatrix[bpCoord.x, bpCoord.y, bpCoord.z] = 0;
+    }
+
 
     public Dictionary<int, int> FindShortestPathsToVerticalSupports((int x, int y, int z) start, int maxDistance)
     {
@@ -138,8 +144,6 @@ public class BuildingGroup : MonoBehaviour
                position.z >= 0 && position.z < bpMatrix.GetLength(2);
     }
 
-
-
     public GameObject FindBuildingPart((int x, int y, int z) bpCoord)
     {
         GameObject result = null;
@@ -161,7 +165,6 @@ public class BuildingGroup : MonoBehaviour
     {
         return transform.Find("BP-" + buildingPartID).gameObject;
     }
-
 
     public void AddBuildingPart(GameObject newBuildingPart, Vector3 newBuildingPartCoordinate)
     {

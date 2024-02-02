@@ -18,15 +18,16 @@ public class BuildingPart : MonoBehaviour
     public List<BuildingPartData> supportedBuildingParts = new List<BuildingPartData>();
     public List<BuildingPartData> supportingBuildingParts = new List<BuildingPartData>();
     public bool changed = true;
+    private bool destroyToggled = false;
 
     public (int x, int y, int z) localPosition = (0, 0, 0);
 
     public void calcTotalSupportedMass()
     {
         totalSupportedMass = 0f;
-        for (int i = 0; i < supportingBuildingParts.Count; i++)
+        for (int i = 0; i < supportedBuildingParts.Count; i++)
         {
-            totalSupportedMass += supportingBuildingParts[i].mass;
+            totalSupportedMass += supportedBuildingParts[i].mass;
         }
     }
 
@@ -52,10 +53,13 @@ public class BuildingPart : MonoBehaviour
 
     public void removeSupportedLoad(int buildingPartID)
     {
+        // Debug.Log("removeSupportedLoad");
+        // Debug.Log("Removing " + buildingPartID + " from supportedBuildingParts." + this.buildingPartID);
         for (int i = 0; i < supportedBuildingParts.Count; i++)
         {
             if (supportedBuildingParts[i].buildingPartID == buildingPartID)
             {
+                // Debug.Log("FOUND MATCH at " + i);
                 supportedBuildingParts.RemoveAt(i);
             }
         }
@@ -90,10 +94,13 @@ public class BuildingPart : MonoBehaviour
 
     public void removeSupportingLoad(int buildingPartID)
     {
+        // Debug.Log("removeSupportingLoad");
+        // Debug.Log("Removing " + buildingPartID + " from supportingBuildingParts." + this.buildingPartID);
         for (int i = 0; i < supportingBuildingParts.Count; i++)
         {
             if (supportingBuildingParts[i].buildingPartID == buildingPartID)
             {
+                // Debug.Log("FOUND MATCH at " + i);
                 supportingBuildingParts.RemoveAt(i);
             }
         }
@@ -107,11 +114,37 @@ public class BuildingPart : MonoBehaviour
 
     }
 
+    public void AddOrUpdateSupportedLoad(int buildingPartID, int distance, float supportedMass)
+    {
+        if (findSupportedLoad(buildingPartID).buildingPartID != 0)
+        {
+            updateSupportedLoad(buildingPartID, distance, supportedMass);
+
+        }
+        else
+        {
+            addSupportedLoad(buildingPartID, distance, supportedMass);
+        }
+    }
+
+    public void AddOrUpdateSupportingLoad(int buildingPartID, int distance, float supportingMass)
+    {
+        if (findSupportingLoad(buildingPartID).buildingPartID != 0)
+        {
+            updateSupportingLoad(buildingPartID, distance, supportingMass);
+        }
+        else
+        {
+            addSupportingLoad(buildingPartID, distance, supportingMass);
+        }
+    }
+
     public void updateBidirectionalLoads()
     {
+        // Debug.Log("Updating bidirectional loads: " + buildingPartID);
         if (isHorizontalSupport)
         {
-
+            // Debug.Log("isHorizontalSupport");
             (int x, int y, int z) translatedLocalPosition = transform.parent.gameObject.GetComponent<BuildingGroup>().translateCoordinateWithOffset(localPosition);
             Dictionary<int, int> verticalSupports = transform.parent.gameObject.GetComponent<BuildingGroup>().FindShortestPathsToVerticalSupports(translatedLocalPosition, supportDistance);
 
@@ -121,17 +154,9 @@ public class BuildingPart : MonoBehaviour
             {
                 if (entry.Value <= supportDistance)
                 {
-                    if (findSupportedLoad(entry.Key).buildingPartID == 0)
-                    {
-                        addSupportedLoad(entry.Key, entry.Value, dividedMass);
-                        transform.parent.gameObject.GetComponent<BuildingGroup>().FindBuildingPartByID(entry.Key).GetComponent<BuildingPart>().addSupportingLoad(buildingPartID, entry.Value, dividedMass);
-                    }
-                    else
-                    {
-                        updateSupportedLoad(entry.Key, entry.Value, dividedMass);
-                        transform.parent.gameObject.GetComponent<BuildingGroup>().FindBuildingPartByID(entry.Key).
-                        GetComponent<BuildingPart>().updateSupportingLoad(buildingPartID, entry.Value, dividedMass);
-                    }
+                    // Debug.Log("Adding or updating supported load to: " + entry.Key + " with distance: " + entry.Value + " and mass: " + dividedMass);
+                    transform.parent.gameObject.GetComponent<BuildingGroup>().FindBuildingPartByID(entry.Key).GetComponent<BuildingPart>().AddOrUpdateSupportedLoad(buildingPartID, entry.Value, dividedMass);
+                    transform.parent.gameObject.GetComponent<BuildingGroup>().FindBuildingPartByID(entry.Key).GetComponent<BuildingPart>().changed = true;
                 }
             }
 
@@ -139,6 +164,7 @@ public class BuildingPart : MonoBehaviour
 
         if (isVerticalSupport)
         {
+            // Debug.Log("isVerticalSupport");
             (int x, int y, int z) translatedLocalPosition = transform.parent.gameObject.GetComponent<BuildingGroup>().translateCoordinateWithOffset(localPosition);
             Dictionary<int, int> horizontalSupports = transform.parent.gameObject.GetComponent<BuildingGroup>().FindShortestPathsToHorizontalSupports(translatedLocalPosition, supportDistance);
 
@@ -146,13 +172,15 @@ public class BuildingPart : MonoBehaviour
             {
                 if (entry.Value <= supportDistance)
                 {
-                    addSupportingLoad(entry.Key, entry.Value, 0);
-                    transform.parent.gameObject.GetComponent<BuildingGroup>().FindBuildingPartByID(entry.Key).GetComponent<BuildingPart>().addSupportedLoad(buildingPartID, entry.Value, 0);
-                    transform.parent.gameObject.GetComponent<BuildingGroup>().FindBuildingPartByID(entry.Key).GetComponent<BuildingPart>().changed = true;
+                    // Debug.Log("Adding or updating supporting load to: " + entry.Key + " with distance: " + entry.Value + " and mass: " + mass);
+                    transform.parent.gameObject.GetComponent<BuildingGroup>().FindBuildingPartByID(entry.Key).GetComponent<BuildingPart>().AddOrUpdateSupportingLoad(buildingPartID, entry.Value, 0);
+
                 }
             }
         }
     }
+
+
 
 
     void Update()
@@ -172,9 +200,58 @@ public class BuildingPart : MonoBehaviour
             {
                 calcTotalSupportedMass();
                 isOverloaded = isVerticalOverloadedCheck();
+
+                if (isOverloaded)
+                {
+                    destroyBuildingPart();
+                }
+            }
+
+            if (isHorizontalSupport)
+            {
+
+                if (isOverloaded)
+                {
+                    destroyBuildingPart();
+                }
             }
         }
     }
+
+    public void destroyBuildingPart()
+    {
+        if (!destroyToggled)
+        {
+            // Debug.Log("Destroying building part: " + buildingPartID);
+            if (isVerticalSupport)
+            {
+                // Debug.Log("isVerticalSupport");
+                foreach (BuildingPartData supportedBuildingPart in supportedBuildingParts)
+                {
+                    // Debug.Log("Removing supporting load from: " + supportedBuildingPart.buildingPartID);
+                    transform.parent.gameObject.GetComponent<BuildingGroup>().FindBuildingPartByID(supportedBuildingPart.buildingPartID).GetComponent<BuildingPart>().removeSupportingLoad(buildingPartID);
+                    transform.parent.gameObject.GetComponent<BuildingGroup>().FindBuildingPartByID(supportedBuildingPart.buildingPartID).GetComponent<BuildingPart>().changed = true;
+                    transform.parent.gameObject.GetComponent<BuildingGroup>().FindBuildingPartByID(supportedBuildingPart.buildingPartID).GetComponent<BuildingPart>().isOverloaded = true;
+                }
+
+            }
+            if (isHorizontalSupport)
+            {
+                // Debug.Log("isHorizontalSupport");
+                foreach (BuildingPartData supportingBuildingPart in supportingBuildingParts)
+                {
+                    // Debug.Log("Removing supported load from: " + supportingBuildingPart.buildingPartID);
+                    transform.parent.gameObject.GetComponent<BuildingGroup>().FindBuildingPartByID(supportingBuildingPart.buildingPartID).GetComponent<BuildingPart>().removeSupportedLoad(buildingPartID);
+                    transform.parent.gameObject.GetComponent<BuildingGroup>().FindBuildingPartByID(supportingBuildingPart.buildingPartID).GetComponent<BuildingPart>().changed = true;
+                }
+            }
+            transform.parent.gameObject.GetComponent<BuildingGroup>().RemoveBuildingPartFromMatrix((transform.parent.gameObject.GetComponent<BuildingGroup>().translateCoordinateWithOffset(localPosition)));
+            gameObject.AddComponent<Rigidbody>();
+            Destroy(gameObject, 3f); // Destroy the parent GameObject after 3 seconds
+            destroyToggled = true;
+        }
+    }
+
 
     public void SetBuildingPartID(int newBuildingPartID)
     {
@@ -205,7 +282,7 @@ public class BuildingPart : MonoBehaviour
         style.fontSize = 20;
         style.normal.textColor = Color.red;
 
-        GUI.Label(new Rect(Screen.width - 100, Screen.height - 30, 100, 30), $"FPS: {fps.ToString("F1d")}", style);
+        GUI.Label(new Rect(Screen.width - 100, Screen.height - 30, 100, 30), $"FPS: {fps.ToString("0.00")}", style);
     }
 
     public bool isTouchingGroundCheck()
@@ -213,7 +290,7 @@ public class BuildingPart : MonoBehaviour
         bool returnBool = false;
         Vector3 center = new Vector3(transform.position.x, transform.position.y + transform.localScale.y / 2, transform.position.z);
         Collider[] colliders = Physics.OverlapBox(center, transform.localScale / 2, Quaternion.identity, LayerMask.GetMask("Terrain"));
-        
+
         if (colliders.Length > 0)
         {
             returnBool = true;
@@ -229,7 +306,7 @@ public class BuildingPart : MonoBehaviour
     public bool isVerticalOverloadedCheck()
     {
         bool returnBool = false;
-        
+
         if (isVerticalSupport)
         {
             if (totalSupportedMass > maxSupporatbleMass)
