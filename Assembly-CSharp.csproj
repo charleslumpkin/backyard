@@ -66,7 +66,9 @@
   <ItemGroup>
     <Compile Include="Assets/ZL_kubes_starterKit/ScriptsEditor/scrEdit_objectTransformRandomizer.cs" />
     <Compile Include="Assets/Character/CameraController.cs" />
+    <Compile Include="Assets/Zombies/ZombieSpawner.cs" />
     <Compile Include="Assets/Building/BuildingGroup.cs" />
+    <Compile Include="Assets/Zombies/ZombieController.cs" />
     <Compile Include="Assets/ZL_kubes_starterKit/ScriptsEditor/scrEdit_objectSnap.cs" />
     <Compile Include="Assets/Building/BuildingManager.cs" />
     <Compile Include="Assets/Building/BuildingPart.cs" />

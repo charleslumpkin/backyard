@@ -10,7 +10,7 @@ public class BuildingManager : MonoBehaviour
     public int totalParts = 0;
     public int currentPart = 0;
     public float rotationSpeed = 360f; // Speed of rotation
-    private Vector3 currentAxis = Vector3.right; // Start with X axis
+    private Vector3 currentAxis = Vector3.up; // Start with Y axis
     private int rotationsCompleted = 0; // Track completed rotations on current axis
     private bool isRotating = false; // To prevent starting a new rotation before finishing the current
 
