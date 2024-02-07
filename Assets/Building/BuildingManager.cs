@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class BuildingManager : MonoBehaviour
@@ -13,6 +14,7 @@ public class BuildingManager : MonoBehaviour
     private Vector3 currentAxis = Vector3.up; // Start with Y axis
     private int rotationsCompleted = 0; // Track completed rotations on current axis
     private bool isRotating = false; // To prevent starting a new rotation before finishing the current
+    private RaycastHit hitTemp;
 
 
     // we need to come back and update thsi based on the size of the buildingPartsArray in the BuildingGroup
@@ -63,6 +65,11 @@ public class BuildingManager : MonoBehaviour
     }
 
 
+    void OnDrawGizmos()
+    {
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(hitTemp.point, 1);
+    }
 
 
     // Start is called before the first frame update
@@ -158,8 +165,50 @@ public class BuildingManager : MonoBehaviour
                 // Check if the hit object is the terrain
                 if (hit.collider.CompareTag("Terrain") || hit.collider.CompareTag("BuildingPart"))
                 {
-                    hit.point -= direction * 0.01f;
+                    RaycastHit hitTemp = hit;
                     hit.point = new Vector3((int)hit.point.x + 0.5f, (int)hit.point.y + 0.5f, (int)hit.point.z + 0.5f);
+
+                    if (hit.collider.CompareTag("BuildingPart"))
+                    {
+                        if (hitTemp.normal == Vector3.up)
+                        {
+                            hit.point = new Vector3(hit.point.x, hit.point.y + 1.0f, hit.point.z);
+                            Debug.Log("Up");
+                        }
+                        else if (hitTemp.normal == Vector3.down)
+                        {
+                            Debug.Log("Down");
+                        }
+                        else if (hitTemp.normal == Vector3.left)
+                        {
+                            Debug.Log("Left");
+                        }
+                        else if (hitTemp.normal == Vector3.right)
+                        {
+                            hit.point = new Vector3(hit.point.x + 1.0f, hit.point.y, hit.point.z);
+                            Debug.Log("Right");
+                        }
+                        else if (hitTemp.normal == Vector3.forward)
+                        {
+                            Debug.Log("Forward");
+                        }
+                        else if (hitTemp.normal == Vector3.back)
+                        {
+                            hit.point = new Vector3(hit.point.x, hit.point.y, hit.point.z - 1.0f);
+                            Debug.Log("Backward");
+                        }
+                        // else if (hitTemp.normal == Vector3.right)
+                        // {
+                        //     hit.point = new Vector3(hit.point.x + 1.0f, hit.point.y, hit.point.z);
+                        // }
+
+                        // else if (hitTemp.normal == Vector3.forward)
+                        // {
+                        //     hit.point = new Vector3(hit.point.x, hit.point.y, hit.point.z + 1.0f);
+                        // }
+                    }
+
+
                     // Check if the raycast length is less than 10f
                     if (hit.distance < 10f)
                     {
@@ -169,9 +218,9 @@ public class BuildingManager : MonoBehaviour
                         currentBuildingPart.SetActive(true);
 
                         Color greenTrans = new Color(0f, 1f, 0f, 0.7f);
-                        
+
                         currentBuildingPart.GetComponent<Renderer>().material.color = greenTrans;
-                        
+
 
                         if (Input.mouseScrollDelta.y != 0)
                         {

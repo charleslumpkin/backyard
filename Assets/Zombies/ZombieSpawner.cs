@@ -16,7 +16,7 @@ public class ZombieSpawner : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        zombiePrefabs = GameObject.FindGameObjectsWithTag("Zombie");
+        Debug.Log("num zom prefabs" + zombiePrefabs.Length);
 
     }
 
@@ -54,6 +54,7 @@ public class ZombieSpawner : MonoBehaviour
 
                 GameObject newZombie = Instantiate(zombiePrefabs[Random.Range(0, zombiePrefabs.Length)], spawnOffset, Quaternion.identity); 
                 newZombie.transform.parent = transform;
+                newZombie.SetActive(true);
                 currentZombies++;
 
             }
