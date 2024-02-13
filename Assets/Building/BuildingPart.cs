@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using Pathfinding;
 
 public class BuildingPart : MonoBehaviour
 {
@@ -21,6 +22,18 @@ public class BuildingPart : MonoBehaviour
     private bool destroyToggled = false;
 
     public (int x, int y, int z) localPosition = (0, 0, 0);
+
+    public void recalculateAIGraph()
+    {
+        Bounds bounds = GetComponent<BoxCollider>().bounds;
+        //translate to world position
+        bounds.center = transform.TransformPoint(bounds.center);
+        var guo = new GraphUpdateObject(bounds);
+
+        // Set some settings
+        guo.updatePhysics = true;
+        AstarPath.active.UpdateGraphs(guo);
+    }
 
     public void calcTotalSupportedMass()
     {

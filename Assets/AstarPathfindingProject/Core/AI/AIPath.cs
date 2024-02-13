@@ -109,7 +109,7 @@ namespace Pathfinding {
 		/// Distance to the end point to consider the end of path to be reached.
 		/// When the end is within this distance then <see cref="OnTargetReached"/> will be called and <see cref="reachedEndOfPath"/> will return true.
 		/// </summary>
-		public float endReachedDistance = 0.2F;
+		public float endReachedDistance = 1.5F;
 
 		/// <summary>Draws detailed gizmos constantly in the scene view instead of only when the agent is selected and settings are being modified</summary>
 		public bool alwaysDrawGizmos;

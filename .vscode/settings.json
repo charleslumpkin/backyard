@@ -56,5 +56,6 @@
         "temp/": true,
         "Temp/": true
     },
-    "dotnet.defaultSolution": "Backyard.sln"
+    "dotnet.defaultSolution": "Backyard.sln",
+    "CodeGPT.apiKey": "CodeGPT Plus Beta"
 }

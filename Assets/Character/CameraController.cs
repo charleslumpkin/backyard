@@ -24,14 +24,19 @@ public class CameraController : MonoBehaviour
 
     void Update()
     {
-        float mouseY = Input.GetAxis("Mouse Y");
+        if (Cursor.lockState == CursorLockMode.Locked)
+        {
+            HandleCameraRotation(); // Handle vertical rotation based on mouse input
+        }
 
+    }
 
-        verticalRotation -= mouseY * sensitivity;
-        verticalRotation = Mathf.Clamp(verticalRotation, -maxVerticalAngle, maxVerticalAngle);
-
-        // Rotate the camera vertically based on mouse Y movement
-        transform.localRotation = Quaternion.Euler(verticalRotation, transform.localEulerAngles.y, 0f);
+    void HandleCameraRotation()
+    {
+        float mouseY = -Input.GetAxis("Mouse Y") * sensitivity; // Invert the mouseY input
+        verticalRotation += mouseY; // Add the mouseY input to the verticalRotation variable
+        verticalRotation = Mathf.Clamp(verticalRotation, -maxVerticalAngle, maxVerticalAngle); // Clamp the verticalRotation variable between -maxVerticalAngle and maxVerticalAngle
+        transform.localRotation = Quaternion.Euler(verticalRotation, 0f, 0f); // Rotate the camera around the x-axis based on the verticalRotation variable
     }
 
 }

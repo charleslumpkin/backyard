@@ -7,7 +7,7 @@ public class ZombieSpawner : MonoBehaviour
 {
     public GameObject[] zombiePrefabs;
     private float spawnRadius = 10.0f;
-    private int maxZombies = 10;
+    private int maxZombies = 150;
     private int currentZombies = 0;
     private int zombiesToSpawn = 1;
     private float offset = 3.0f;
@@ -16,8 +16,7 @@ public class ZombieSpawner : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        Debug.Log("num zom prefabs" + zombiePrefabs.Length);
-
+        
     }
 
     // Update is called once per frame
@@ -32,12 +31,12 @@ public class ZombieSpawner : MonoBehaviour
     private void OnDrawGizmos()
     {
         Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(GameObject.Find("Character").transform.position, spawnRadius);
+        Gizmos.DrawWireSphere(GameObject.Find("PlayerCapsule").transform.position, spawnRadius);
     }
 
     public void SpawnZombies()
     {
-        Vector3 spawnPosition = GameObject.Find("Character").transform.position;
+        Vector3 spawnPosition = GameObject.Find("PlayerCapsule").transform.position;
         Vector2 randomCircle = Random.insideUnitCircle * spawnRadius;
         spawnPosition.x += randomCircle.x;
         spawnPosition.z += randomCircle.y;

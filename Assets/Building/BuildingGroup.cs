@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Pathfinding;
 using Unity.VisualScripting;
+using UnityEngine.UIElements;
 
 
 [System.Serializable]
@@ -190,11 +191,33 @@ public class BuildingGroup : MonoBehaviour
         buildingPart.GetComponent<BuildingPart>().SetBuildingPartID(currentID);
         buildingPart.GetComponent<BuildingPart>().localPosition = ((int)buildingPart.transform.localPosition.x, (int)buildingPart.transform.localPosition.y, (int)buildingPart.transform.localPosition.z);
         buildingPart.GetComponent<Renderer>().material.color = Color.white;
-
+        buildingPart.GetComponent<BoxCollider>().enabled = true;
+        
         ExpandMatrixAndInsertPart(buildingPart.transform.localPosition, buildingPart);
+ 
+        AstarPath.active.Scan();
 
 
+    }
 
+
+    public void recalculateAIGraph()
+    {
+        for(int x = 0; x < bpMatrix.GetLength(0); x++)
+        {
+            for (int y = 0; y < bpMatrix.GetLength(1); y++)
+            {
+                for (int z = 0; z < bpMatrix.GetLength(2); z++)
+                {
+                    if (bpMatrix[x, y, z] != 0)
+                    {
+                        GameObject part = FindBuildingPart((x, y, z));
+                        part.GetComponent<BuildingPart>().recalculateAIGraph();
+                    }
+                }
+            }
+        }
+     
     }
 
 

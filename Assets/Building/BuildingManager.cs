@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class BuildingManager : MonoBehaviour
 {
@@ -162,50 +163,44 @@ public class BuildingManager : MonoBehaviour
             // Perform the raycast
             if (Physics.Raycast(origin, direction, out hit, Mathf.Infinity, ~LayerMask.GetMask("SelectedBuildingPart")))
             {
+
+
                 // Check if the hit object is the terrain
-                if (hit.collider.CompareTag("Terrain") || hit.collider.CompareTag("BuildingPart"))
+                if (hit.collider.CompareTag("Terrain") || hit.collider is BoxCollider)
                 {
+
                     RaycastHit hitTemp = hit;
                     hit.point = new Vector3((int)hit.point.x + 0.5f, (int)hit.point.y + 0.5f, (int)hit.point.z + 0.5f);
 
-                    if (hit.collider.CompareTag("BuildingPart"))
+                    if (hit.collider is BoxCollider)
                     {
+
                         if (hitTemp.normal == Vector3.up)
                         {
                             hit.point = new Vector3(hit.point.x, hit.point.y + 1.0f, hit.point.z);
-                            Debug.Log("Up");
                         }
                         else if (hitTemp.normal == Vector3.down)
                         {
-                            Debug.Log("Down");
+                            // Intentionally left blank
                         }
                         else if (hitTemp.normal == Vector3.left)
                         {
-                            Debug.Log("Left");
+                            // Intentionally left blank
                         }
                         else if (hitTemp.normal == Vector3.right)
                         {
                             hit.point = new Vector3(hit.point.x + 1.0f, hit.point.y, hit.point.z);
-                            Debug.Log("Right");
                         }
                         else if (hitTemp.normal == Vector3.forward)
                         {
-                            Debug.Log("Forward");
+                            //Intentionally left blank
                         }
                         else if (hitTemp.normal == Vector3.back)
                         {
                             hit.point = new Vector3(hit.point.x, hit.point.y, hit.point.z - 1.0f);
-                            Debug.Log("Backward");
-                        }
-                        // else if (hitTemp.normal == Vector3.right)
-                        // {
-                        //     hit.point = new Vector3(hit.point.x + 1.0f, hit.point.y, hit.point.z);
-                        // }
 
-                        // else if (hitTemp.normal == Vector3.forward)
-                        // {
-                        //     hit.point = new Vector3(hit.point.x, hit.point.y, hit.point.z + 1.0f);
-                        // }
+                        }
+
                     }
 
 
@@ -274,6 +269,10 @@ public class BuildingManager : MonoBehaviour
                     // Draw a debug ray from the object to the nearest point on the terrain
                     Debug.DrawRay(origin, direction * hit.distance, Color.red);
                 }
+            }
+            else
+            {
+                currentBuildingPart.SetActive(false);
             }
         }
         else
