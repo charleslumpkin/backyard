@@ -59,7 +59,7 @@ public class JumpingState : ZombieState
 
         if (controller.IsGrounded())
         {
-            controller.Animator.SetBool("isJumping", true);            
+            controller.Animator.SetBool("isJumping", true);
             controller.StartCoroutine(JumpWithDelay());
 
             IEnumerator JumpWithDelay()
@@ -141,12 +141,20 @@ public class ZombieController : MonoBehaviour
     public AIPath AIPath => aiPath;
     public Rigidbody Rigidbody => rb;
 
+    private CapsuleCollider capsuleCollider; // Reference to the zombie's capsule collider
+    public float checkRadius = 3f; // The radius within which to check for building parts
+    public LayerMask terrainLayer; // Assign the layer for the terrain in the inspector
+    public bool isNearBuildingPart = false; // Tracks whether the zombie is near a building part
+
+
     private void Awake()
     {
         animator = GetComponent<Animator>();
         aiPath = GetComponent<AIPath>();
         rb = GetComponent<Rigidbody>();
         character = GameObject.Find("PlayerCapsule");
+        capsuleCollider = GetComponent<CapsuleCollider>();
+        terrainLayer = LayerMask.GetMask("Terrain");
     }
 
     private void Start()
@@ -158,8 +166,11 @@ public class ZombieController : MonoBehaviour
     private void Update()
     {
         currentState.Update();
+        CheckProximityToBuildingPart();
+        CheckGroundedStatus();
 
-        if(Input.GetKeyDown(KeyCode.KeypadPlus))
+
+        if (Input.GetKeyDown(KeyCode.KeypadPlus))
         {
             TransitionState(new JumpingState(this));
         }
@@ -167,7 +178,7 @@ public class ZombieController : MonoBehaviour
         moveCheckTimer += Time.deltaTime;
         if (moveCheckTimer >= 1.0f)
         {
-            Debug.Log("Checking movement");
+            // Debug.Log("Checking movement");
             moveCheckTimer = 0f;
             float distanceMoved = Vector3.Distance(transform.position, lastPosition);
             lastPosition = transform.position;
@@ -175,19 +186,78 @@ public class ZombieController : MonoBehaviour
             float distanceToCharacter = Vector3.Distance(transform.position, character.transform.position);
             if (distanceToCharacter <= 1.5f)
             {
-                Debug.Log("Attacking");
+                // Debug.Log("Attacking");
                 TransitionState(new AttackingState(this));
             }
             else if (distanceMoved < 0.1f)
             { // Assuming the zombie is stuck if it moves less than 0.1 units in a second
-                Debug.Log("Stuck");
+                // Debug.Log("Stuck");
                 TransitionState(new StuckState(this));
             }
             else
             {
-                Debug.Log("Running");
+                // Debug.Log("Running");
                 // Decide whether to keep running or change to jumping
                 TransitionState(new RunningState(this)); // or new JumpingState(this) based on additional logic
+            }
+        }
+
+        if (GetComponent<SphereCollider>())
+        {
+            GetComponent<SphereCollider>().enabled = true;
+        }
+    }
+
+    void CheckProximityToBuildingPart()
+    {
+        Collider[] hitColliders = Physics.OverlapSphere(transform.position, checkRadius);
+        bool foundBuildingPart = false;
+
+        foreach (var hitCollider in hitColliders)
+        {
+            if (hitCollider.CompareTag("BuildingPart"))
+            {
+                foundBuildingPart = true;
+                break; // Exit the loop as soon as one building part is found within range
+            }
+        }
+
+        if (foundBuildingPart && !isNearBuildingPart)
+        {
+            AdjustPathfindingProperties(true);
+            isNearBuildingPart = true;
+        }
+        else if (!foundBuildingPart && isNearBuildingPart)
+        {
+            AdjustPathfindingProperties(false);
+            isNearBuildingPart = false;
+        }
+    }
+
+    void AdjustPathfindingProperties(bool nearBuilding)
+    {
+        if (nearBuilding)
+        {
+            aiPath.pickNextWaypointDist = 0.3f;
+        }
+        else
+        {
+            aiPath.pickNextWaypointDist = 2.0f;
+        }
+    }
+
+    void CheckGroundedStatus()
+    {
+        if (!isNearBuildingPart) // Only check for grounding if the zombie has left a building part
+        {
+            bool isGrounded = Physics.Raycast(transform.position, Vector3.down, capsuleCollider.height / 2 + 0.1f, terrainLayer);
+            if (isGrounded)
+            {
+                capsuleCollider.excludeLayers = LayerMask.GetMask("Player");
+            }
+            else
+            {
+                capsuleCollider.excludeLayers = LayerMask.GetMask("Zombie", "Player");
             }
         }
     }
@@ -202,7 +272,7 @@ public class ZombieController : MonoBehaviour
     public bool IsGrounded()
     {
         Vector3 dr = new Vector3(transform.position.x, transform.position.y + 0.1f, transform.position.z);
-        Debug.DrawRay(dr, Vector3.down * 0.2f, Color.red, 1.0f);
+        // Debug.DrawRay(dr, Vector3.down * 0.2f, Color.red, 1.0f);
         return Physics.Raycast(dr, Vector3.down, 0.2f);
     }
 

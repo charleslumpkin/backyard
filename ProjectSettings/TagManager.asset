@@ -8,6 +8,7 @@ TagManager:
   - SelectedBuildingPart
   - BuildingPart
   - Zombie
+  - CinemachineTarget
   layers:
   - Default
   - TransparentFX
@@ -18,7 +19,7 @@ TagManager:
   - BuildingPart
   - Terrain
   - Zombie
-  - 
+  - Player
   - 
   - 
   - 

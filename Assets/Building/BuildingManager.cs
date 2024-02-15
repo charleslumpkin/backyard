@@ -68,8 +68,11 @@ public class BuildingManager : MonoBehaviour
 
     void OnDrawGizmos()
     {
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(hitTemp.point, 1);
+        //set gizmo color to purple 
+        // Gizmos.color = new Color(1f, 0f, 1f, 0.7f);
+
+        // Gizmos.DrawWireCube(hitTemp.point, new Vector3(1f, 1f, 1f));
+
     }
 
 
@@ -207,14 +210,41 @@ public class BuildingManager : MonoBehaviour
                     // Check if the raycast length is less than 10f
                     if (hit.distance < 10f)
                     {
+                        //see if there is anything inside a 1x1x1 cube around the hit point
+                        float halfEx = 0.5f;
+
+                        Collider[] colliders = Physics.OverlapBox(hit.point, new Vector3(halfEx, halfEx, halfEx));
+               
+                        bool isOccupied = false;
+                        if (colliders.Length > 0)
+                        {
+                            foreach (Collider collider in colliders)
+                            {
+                                // if the collider is anything other than "Terrain" then spot is occupied
+                                if (collider.CompareTag("Player") || collider.CompareTag("Zombie"))
+                                {
+                                    isOccupied = true;
+                                }
+
+                            }
+                        }
+
                         // Set the position of the currentBuildingPart to the hit point
                         currentBuildingPart.transform.position = hit.point;
 
                         currentBuildingPart.SetActive(true);
 
-                        Color greenTrans = new Color(0f, 1f, 0f, 0.7f);
+                        Color validSpotColor = new Color(0f, 1f, 0f, 0.7f);
+                        Color invalidSpotColor = new Color(1f, 0f, 0f, 0.7f);
 
-                        currentBuildingPart.GetComponent<Renderer>().material.color = greenTrans;
+                        if (isOccupied)
+                        {
+                            currentBuildingPart.GetComponent<Renderer>().material.color = invalidSpotColor;
+                        }
+                        else
+                        {
+                            currentBuildingPart.GetComponent<Renderer>().material.color = validSpotColor;
+                        }
 
 
                         if (Input.mouseScrollDelta.y != 0)
@@ -252,7 +282,7 @@ public class BuildingManager : MonoBehaviour
                         }
 
 
-                        if (Input.GetMouseButtonDown(0))
+                        if (Input.GetMouseButtonDown(0) && !isOccupied)
                         {
                             GameObject selectedBuildingGroup = FindOrAddBuildingGroup(hit.point);
                             selectedBuildingGroup.GetComponent<BuildingGroup>().AddBuildingPart(currentBuildingPart, hit.point);
@@ -269,6 +299,8 @@ public class BuildingManager : MonoBehaviour
                     // Draw a debug ray from the object to the nearest point on the terrain
                     Debug.DrawRay(origin, direction * hit.distance, Color.red);
                 }
+                hitTemp = hit;
+
             }
             else
             {
@@ -281,5 +313,7 @@ public class BuildingManager : MonoBehaviour
             currentBuildingPart.SetActive(false);
         }
     }
+
+
 }
 

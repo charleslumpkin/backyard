@@ -643,6 +643,11 @@ MonoBehaviour:
   WalkingSpeed: 2
   RunningSpeed: 4
   JumpForce: 5
+  checkRadius: 3
+  terrainLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  isNearBuildingPart: 0
 --- !u!114 &17546671
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1788,6 +1793,11 @@ MonoBehaviour:
   WalkingSpeed: 2
   RunningSpeed: 4
   JumpForce: 5
+  checkRadius: 3
+  terrainLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  isNearBuildingPart: 0
 --- !u!114 &61505329
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2442,6 +2452,11 @@ MonoBehaviour:
   WalkingSpeed: 2
   RunningSpeed: 4
   JumpForce: 5
+  checkRadius: 3
+  terrainLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  isNearBuildingPart: 0
 --- !u!114 &91647267
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3620,6 +3635,11 @@ MonoBehaviour:
   WalkingSpeed: 2
   RunningSpeed: 4
   JumpForce: 5
+  checkRadius: 3
+  terrainLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  isNearBuildingPart: 0
 --- !u!114 &147808508
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3783,6 +3803,11 @@ MonoBehaviour:
   WalkingSpeed: 2
   RunningSpeed: 4
   JumpForce: 5
+  checkRadius: 3
+  terrainLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  isNearBuildingPart: 0
 --- !u!114 &163714969
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5419,6 +5444,11 @@ MonoBehaviour:
   WalkingSpeed: 1
   RunningSpeed: 1
   JumpForce: 5
+  checkRadius: 3
+  terrainLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  isNearBuildingPart: 0
 --- !u!114 &330524409
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5469,7 +5499,7 @@ MonoBehaviour:
   maxAcceleration: -2.5
   rotationSpeed: 360
   slowdownDistance: 0.6
-  pickNextWaypointDist: 0.3
+  pickNextWaypointDist: 2
   endReachedDistance: 0.3
   alwaysDrawGizmos: 0
   slowWhenNotFacingTarget: 1
@@ -5516,7 +5546,7 @@ CapsuleCollider:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 512
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
@@ -7086,6 +7116,11 @@ MonoBehaviour:
   WalkingSpeed: 2
   RunningSpeed: 4
   JumpForce: 5
+  checkRadius: 3
+  terrainLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  isNearBuildingPart: 0
 --- !u!114 &388170819
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8768,6 +8803,11 @@ MonoBehaviour:
   WalkingSpeed: 2
   RunningSpeed: 4
   JumpForce: 5
+  checkRadius: 3
+  terrainLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  isNearBuildingPart: 0
 --- !u!114 &468074821
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8931,6 +8971,11 @@ MonoBehaviour:
   WalkingSpeed: 2
   RunningSpeed: 4
   JumpForce: 5
+  checkRadius: 3
+  terrainLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  isNearBuildingPart: 0
 --- !u!114 &471660289
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10567,6 +10612,11 @@ MonoBehaviour:
   WalkingSpeed: 2
   RunningSpeed: 4
   JumpForce: 5
+  checkRadius: 3
+  terrainLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  isNearBuildingPart: 0
 --- !u!114 &523604997
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10730,6 +10780,11 @@ MonoBehaviour:
   WalkingSpeed: 2
   RunningSpeed: 4
   JumpForce: 5
+  checkRadius: 3
+  terrainLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  isNearBuildingPart: 0
 --- !u!114 &553686643
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10893,6 +10948,11 @@ MonoBehaviour:
   WalkingSpeed: 2
   RunningSpeed: 4
   JumpForce: 5
+  checkRadius: 3
+  terrainLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  isNearBuildingPart: 0
 --- !u!114 &561028798
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11056,6 +11116,11 @@ MonoBehaviour:
   WalkingSpeed: 2
   RunningSpeed: 4
   JumpForce: 5
+  checkRadius: 3
+  terrainLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  isNearBuildingPart: 0
 --- !u!114 &565425940
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11219,6 +11284,11 @@ MonoBehaviour:
   WalkingSpeed: 2
   RunningSpeed: 4
   JumpForce: 5
+  checkRadius: 3
+  terrainLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  isNearBuildingPart: 0
 --- !u!114 &574392575
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -12348,9 +12418,9 @@ GameObject:
   - component: {fileID: 587107936}
   - component: {fileID: 587107938}
   - component: {fileID: 587107939}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: CharacterCam
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -13963,6 +14033,11 @@ MonoBehaviour:
   WalkingSpeed: 2
   RunningSpeed: 4
   JumpForce: 5
+  checkRadius: 3
+  terrainLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  isNearBuildingPart: 0
 --- !u!114 &624523892
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -14617,6 +14692,11 @@ MonoBehaviour:
   WalkingSpeed: 2
   RunningSpeed: 4
   JumpForce: 5
+  checkRadius: 3
+  terrainLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  isNearBuildingPart: 0
 --- !u!114 &681557218
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -15365,6 +15445,11 @@ MonoBehaviour:
   WalkingSpeed: 2
   RunningSpeed: 4
   JumpForce: 5
+  checkRadius: 3
+  terrainLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  isNearBuildingPart: 0
 --- !u!114 &708076010
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16019,6 +16104,11 @@ MonoBehaviour:
   WalkingSpeed: 2
   RunningSpeed: 4
   JumpForce: 5
+  checkRadius: 3
+  terrainLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  isNearBuildingPart: 0
 --- !u!114 &750559120
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16182,6 +16272,11 @@ MonoBehaviour:
   WalkingSpeed: 2
   RunningSpeed: 4
   JumpForce: 5
+  checkRadius: 3
+  terrainLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  isNearBuildingPart: 0
 --- !u!114 &777263438
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16846,6 +16941,11 @@ MonoBehaviour:
   WalkingSpeed: 2
   RunningSpeed: 4
   JumpForce: 5
+  checkRadius: 3
+  terrainLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  isNearBuildingPart: 0
 --- !u!114 &832551134
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -18482,6 +18582,11 @@ MonoBehaviour:
   WalkingSpeed: 2
   RunningSpeed: 4
   JumpForce: 5
+  checkRadius: 3
+  terrainLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  isNearBuildingPart: 0
 --- !u!114 &885445011
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -18645,6 +18750,11 @@ MonoBehaviour:
   WalkingSpeed: 2
   RunningSpeed: 4
   JumpForce: 5
+  checkRadius: 3
+  terrainLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  isNearBuildingPart: 0
 --- !u!114 &893904201
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -18808,6 +18918,11 @@ MonoBehaviour:
   WalkingSpeed: 2
   RunningSpeed: 4
   JumpForce: 5
+  checkRadius: 3
+  terrainLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  isNearBuildingPart: 0
 --- !u!114 &907033958
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -18950,6 +19065,18 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 587107935}
     m_Modifications:
+    - target: {fileID: -9095311787969711627, guid: 77644bef6187c453a9f22728d07f7e83, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: -9009388028391815180, guid: 77644bef6187c453a9f22728d07f7e83, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: -8776630214729606745, guid: 77644bef6187c453a9f22728d07f7e83, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 77644bef6187c453a9f22728d07f7e83, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -18990,14 +19117,250 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -8475549590321833487, guid: 77644bef6187c453a9f22728d07f7e83, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: -8194682793036142194, guid: 77644bef6187c453a9f22728d07f7e83, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: -7757114411846900146, guid: 77644bef6187c453a9f22728d07f7e83, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: -7422046029035242442, guid: 77644bef6187c453a9f22728d07f7e83, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: -7203168236492737191, guid: 77644bef6187c453a9f22728d07f7e83, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: -7161287105762248019, guid: 77644bef6187c453a9f22728d07f7e83, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: -6813908009267642274, guid: 77644bef6187c453a9f22728d07f7e83, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: -6726230292140367144, guid: 77644bef6187c453a9f22728d07f7e83, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: -6697657941480640647, guid: 77644bef6187c453a9f22728d07f7e83, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: -6480700717933579448, guid: 77644bef6187c453a9f22728d07f7e83, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: -6380390591986628404, guid: 77644bef6187c453a9f22728d07f7e83, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: -6334105040096614056, guid: 77644bef6187c453a9f22728d07f7e83, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: -5359969802624172763, guid: 77644bef6187c453a9f22728d07f7e83, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: -5309486982017441109, guid: 77644bef6187c453a9f22728d07f7e83, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: -4982430634017446603, guid: 77644bef6187c453a9f22728d07f7e83, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: -4488415366176099037, guid: 77644bef6187c453a9f22728d07f7e83, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: -4418503445992076414, guid: 77644bef6187c453a9f22728d07f7e83, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: -4390045375772845432, guid: 77644bef6187c453a9f22728d07f7e83, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: -4298788230843964351, guid: 77644bef6187c453a9f22728d07f7e83, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: -4262693146506795612, guid: 77644bef6187c453a9f22728d07f7e83, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: -4183776959130304448, guid: 77644bef6187c453a9f22728d07f7e83, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: -4027094652725927877, guid: 77644bef6187c453a9f22728d07f7e83, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: -3745991168922829800, guid: 77644bef6187c453a9f22728d07f7e83, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: -3354820239046558502, guid: 77644bef6187c453a9f22728d07f7e83, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: -3083485272624368876, guid: 77644bef6187c453a9f22728d07f7e83, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: -2610704896538430656, guid: 77644bef6187c453a9f22728d07f7e83, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: -2329185538302962304, guid: 77644bef6187c453a9f22728d07f7e83, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: -2303140145837372073, guid: 77644bef6187c453a9f22728d07f7e83, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: -2101279670050242256, guid: 77644bef6187c453a9f22728d07f7e83, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: -2038244147942225083, guid: 77644bef6187c453a9f22728d07f7e83, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: -1763281574105679867, guid: 77644bef6187c453a9f22728d07f7e83, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: -1139176626694096294, guid: 77644bef6187c453a9f22728d07f7e83, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 144775691886143535, guid: 77644bef6187c453a9f22728d07f7e83, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 786437746115861087, guid: 77644bef6187c453a9f22728d07f7e83, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 77644bef6187c453a9f22728d07f7e83, type: 3}
       propertyPath: m_Name
       value: CharacterArms
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 77644bef6187c453a9f22728d07f7e83, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 990545297301868672, guid: 77644bef6187c453a9f22728d07f7e83, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 1123180535784020547, guid: 77644bef6187c453a9f22728d07f7e83, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 1540085667058215675, guid: 77644bef6187c453a9f22728d07f7e83, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 1757145161316529095, guid: 77644bef6187c453a9f22728d07f7e83, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 1917257853891754163, guid: 77644bef6187c453a9f22728d07f7e83, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 2422984259158776494, guid: 77644bef6187c453a9f22728d07f7e83, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 2536521713251476590, guid: 77644bef6187c453a9f22728d07f7e83, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 2670668489980699515, guid: 77644bef6187c453a9f22728d07f7e83, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 2842349855651559208, guid: 77644bef6187c453a9f22728d07f7e83, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 3073189011340755681, guid: 77644bef6187c453a9f22728d07f7e83, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 3319057884579924145, guid: 77644bef6187c453a9f22728d07f7e83, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 4251703105814669019, guid: 77644bef6187c453a9f22728d07f7e83, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 5263591980685973336, guid: 77644bef6187c453a9f22728d07f7e83, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 5528860797864257434, guid: 77644bef6187c453a9f22728d07f7e83, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 5682767774868011402, guid: 77644bef6187c453a9f22728d07f7e83, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 5760164613476233248, guid: 77644bef6187c453a9f22728d07f7e83, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 5824442405986526987, guid: 77644bef6187c453a9f22728d07f7e83, type: 3}
+      propertyPath: m_Layer
+      value: 9
       objectReference: {fileID: 0}
     - target: {fileID: 5866666021909216657, guid: 77644bef6187c453a9f22728d07f7e83, type: 3}
       propertyPath: m_Controller
       value: 
       objectReference: {fileID: 9100000, guid: 184f709fac7e54c66b9370cbe9a9886d, type: 2}
+    - target: {fileID: 5977617569195218480, guid: 77644bef6187c453a9f22728d07f7e83, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 6525555492803522714, guid: 77644bef6187c453a9f22728d07f7e83, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 6747908156270680693, guid: 77644bef6187c453a9f22728d07f7e83, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 7036213049465896255, guid: 77644bef6187c453a9f22728d07f7e83, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 7407423017992359775, guid: 77644bef6187c453a9f22728d07f7e83, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 7796519364258407554, guid: 77644bef6187c453a9f22728d07f7e83, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 8543822294911486747, guid: 77644bef6187c453a9f22728d07f7e83, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
     - target: {fileID: 8685917052935711915, guid: 77644bef6187c453a9f22728d07f7e83, type: 3}
       propertyPath: m_CastShadows
       value: 0
@@ -19006,6 +19369,14 @@ PrefabInstance:
       propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 2100000, guid: c1b49ebf9fa601f49839673b6066b4e0, type: 2}
+    - target: {fileID: 8862843091982808006, guid: 77644bef6187c453a9f22728d07f7e83, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 9093279917274236383, guid: 77644bef6187c453a9f22728d07f7e83, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects:
     - {fileID: -8700617353114198275, guid: 77644bef6187c453a9f22728d07f7e83, type: 3}
@@ -20520,6 +20891,11 @@ MonoBehaviour:
   WalkingSpeed: 2
   RunningSpeed: 4
   JumpForce: 5
+  checkRadius: 3
+  terrainLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  isNearBuildingPart: 0
 --- !u!114 &982587310
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -20738,6 +21114,11 @@ MonoBehaviour:
   WalkingSpeed: 2
   RunningSpeed: 4
   JumpForce: 5
+  checkRadius: 3
+  terrainLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  isNearBuildingPart: 0
 --- !u!114 &986686966
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -20901,6 +21282,11 @@ MonoBehaviour:
   WalkingSpeed: 2
   RunningSpeed: 4
   JumpForce: 5
+  checkRadius: 3
+  terrainLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  isNearBuildingPart: 0
 --- !u!114 &1014014073
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -21046,7 +21432,7 @@ GameObject:
   - component: {fileID: 1060347897}
   m_Layer: 0
   m_Name: Zombies
-  m_TagString: Untagged
+  m_TagString: Zombie
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -22079,6 +22465,11 @@ MonoBehaviour:
   WalkingSpeed: 2
   RunningSpeed: 4
   JumpForce: 5
+  checkRadius: 3
+  terrainLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  isNearBuildingPart: 0
 --- !u!114 &1112031687
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -22242,6 +22633,11 @@ MonoBehaviour:
   WalkingSpeed: 2
   RunningSpeed: 4
   JumpForce: 5
+  checkRadius: 3
+  terrainLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  isNearBuildingPart: 0
 --- !u!114 &1123401617
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -22896,6 +23292,11 @@ MonoBehaviour:
   WalkingSpeed: 2
   RunningSpeed: 4
   JumpForce: 5
+  checkRadius: 3
+  terrainLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  isNearBuildingPart: 0
 --- !u!114 &1204967309
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -23550,6 +23951,11 @@ MonoBehaviour:
   WalkingSpeed: 2
   RunningSpeed: 4
   JumpForce: 5
+  checkRadius: 3
+  terrainLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  isNearBuildingPart: 0
 --- !u!114 &1296671530
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -24204,6 +24610,11 @@ MonoBehaviour:
   WalkingSpeed: 2
   RunningSpeed: 4
   JumpForce: 5
+  checkRadius: 3
+  terrainLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  isNearBuildingPart: 0
 --- !u!114 &1346135800
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -24367,6 +24778,11 @@ MonoBehaviour:
   WalkingSpeed: 2
   RunningSpeed: 4
   JumpForce: 5
+  checkRadius: 3
+  terrainLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  isNearBuildingPart: 0
 --- !u!114 &1374774379
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -24530,6 +24946,11 @@ MonoBehaviour:
   WalkingSpeed: 2
   RunningSpeed: 4
   JumpForce: 5
+  checkRadius: 3
+  terrainLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  isNearBuildingPart: 0
 --- !u!114 &1389102327
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -26317,6 +26738,34 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 4135013735270702863, guid: c5efc39a8aaf6e64ea40e9ad573e9b47, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 5393215578589016640, guid: c5efc39a8aaf6e64ea40e9ad573e9b47, type: 3}
+      propertyPath: m_Height
+      value: 1.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 5393215578589016640, guid: c5efc39a8aaf6e64ea40e9ad573e9b47, type: 3}
+      propertyPath: m_Radius
+      value: 0.3
+      objectReference: {fileID: 0}
+    - target: {fileID: 5393215578589016640, guid: c5efc39a8aaf6e64ea40e9ad573e9b47, type: 3}
+      propertyPath: m_ExcludeLayers.m_Bits
+      value: 256
+      objectReference: {fileID: 0}
+    - target: {fileID: 5393215578589016642, guid: c5efc39a8aaf6e64ea40e9ad573e9b47, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 5393215578589016642, guid: c5efc39a8aaf6e64ea40e9ad573e9b47, type: 3}
+      propertyPath: m_TagString
+      value: Player
+      objectReference: {fileID: 0}
+    - target: {fileID: 8616685848737228371, guid: c5efc39a8aaf6e64ea40e9ad573e9b47, type: 3}
+      propertyPath: JumpHeight
+      value: 1.5
+      objectReference: {fileID: 0}
     - target: {fileID: 8616685848737228371, guid: c5efc39a8aaf6e64ea40e9ad573e9b47, type: 3}
       propertyPath: RotationSpeed
       value: 6
@@ -26328,6 +26777,22 @@ PrefabInstance:
     - target: {fileID: 8616685848737228372, guid: c5efc39a8aaf6e64ea40e9ad573e9b47, type: 3}
       propertyPath: m_Name
       value: PlayerCapsule
+      objectReference: {fileID: 0}
+    - target: {fileID: 8616685848737228372, guid: c5efc39a8aaf6e64ea40e9ad573e9b47, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 8616685848737228372, guid: c5efc39a8aaf6e64ea40e9ad573e9b47, type: 3}
+      propertyPath: m_TagString
+      value: Player
+      objectReference: {fileID: 0}
+    - target: {fileID: 8616685848737228382, guid: c5efc39a8aaf6e64ea40e9ad573e9b47, type: 3}
+      propertyPath: m_Height
+      value: 1.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 8616685848737228382, guid: c5efc39a8aaf6e64ea40e9ad573e9b47, type: 3}
+      propertyPath: m_Radius
+      value: 0.3
       objectReference: {fileID: 0}
     - target: {fileID: 8997996947095583982, guid: c5efc39a8aaf6e64ea40e9ad573e9b47, type: 3}
       propertyPath: m_LocalPosition.x
@@ -26406,6 +26871,11 @@ MonoBehaviour:
   WalkingSpeed: 2
   RunningSpeed: 4
   JumpForce: 5
+  checkRadius: 3
+  terrainLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  isNearBuildingPart: 0
 --- !u!114 &1587057150
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -27551,6 +28021,11 @@ MonoBehaviour:
   WalkingSpeed: 2
   RunningSpeed: 4
   JumpForce: 5
+  checkRadius: 3
+  terrainLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  isNearBuildingPart: 0
 --- !u!114 &1656538414
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -28205,6 +28680,11 @@ MonoBehaviour:
   WalkingSpeed: 2
   RunningSpeed: 4
   JumpForce: 5
+  checkRadius: 3
+  terrainLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  isNearBuildingPart: 0
 --- !u!114 &1687422092
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -28368,6 +28848,11 @@ MonoBehaviour:
   WalkingSpeed: 2
   RunningSpeed: 4
   JumpForce: 5
+  checkRadius: 3
+  terrainLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  isNearBuildingPart: 0
 --- !u!114 &1725013359
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -29022,6 +29507,11 @@ MonoBehaviour:
   WalkingSpeed: 2
   RunningSpeed: 4
   JumpForce: 5
+  checkRadius: 3
+  terrainLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  isNearBuildingPart: 0
 --- !u!114 &1759693034
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -29185,6 +29675,11 @@ MonoBehaviour:
   WalkingSpeed: 2
   RunningSpeed: 4
   JumpForce: 5
+  checkRadius: 3
+  terrainLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  isNearBuildingPart: 0
 --- !u!114 &1773034037
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -29348,6 +29843,11 @@ MonoBehaviour:
   WalkingSpeed: 2
   RunningSpeed: 4
   JumpForce: 5
+  checkRadius: 3
+  terrainLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  isNearBuildingPart: 0
 --- !u!114 &1776751390
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -29511,6 +30011,11 @@ MonoBehaviour:
   WalkingSpeed: 2
   RunningSpeed: 4
   JumpForce: 5
+  checkRadius: 3
+  terrainLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  isNearBuildingPart: 0
 --- !u!114 &1795824475
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -29674,6 +30179,11 @@ MonoBehaviour:
   WalkingSpeed: 2
   RunningSpeed: 4
   JumpForce: 5
+  checkRadius: 3
+  terrainLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  isNearBuildingPart: 0
 --- !u!114 &1811956321
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -29837,6 +30347,11 @@ MonoBehaviour:
   WalkingSpeed: 2
   RunningSpeed: 4
   JumpForce: 5
+  checkRadius: 3
+  terrainLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  isNearBuildingPart: 0
 --- !u!114 &1841082180
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -30982,6 +31497,11 @@ MonoBehaviour:
   WalkingSpeed: 2
   RunningSpeed: 4
   JumpForce: 5
+  checkRadius: 3
+  terrainLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  isNearBuildingPart: 0
 --- !u!114 &1926966042
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -31290,6 +31810,11 @@ MonoBehaviour:
   WalkingSpeed: 2
   RunningSpeed: 4
   JumpForce: 5
+  checkRadius: 3
+  terrainLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  isNearBuildingPart: 0
 --- !u!114 &1975921752
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -31453,6 +31978,11 @@ MonoBehaviour:
   WalkingSpeed: 2
   RunningSpeed: 4
   JumpForce: 5
+  checkRadius: 3
+  terrainLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  isNearBuildingPart: 0
 --- !u!114 &1976929208
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -32193,6 +32723,11 @@ MonoBehaviour:
   WalkingSpeed: 2
   RunningSpeed: 4
   JumpForce: 5
+  checkRadius: 3
+  terrainLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  isNearBuildingPart: 0
 --- !u!114 &2012947602
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -32356,6 +32891,11 @@ MonoBehaviour:
   WalkingSpeed: 2
   RunningSpeed: 4
   JumpForce: 5
+  checkRadius: 3
+  terrainLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  isNearBuildingPart: 0
 --- !u!114 &2056156409
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -33501,6 +34041,11 @@ MonoBehaviour:
   WalkingSpeed: 2
   RunningSpeed: 4
   JumpForce: 5
+  checkRadius: 3
+  terrainLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  isNearBuildingPart: 0
 --- !u!114 &2104842023
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -33664,6 +34209,11 @@ MonoBehaviour:
   WalkingSpeed: 2
   RunningSpeed: 4
   JumpForce: 5
+  checkRadius: 3
+  terrainLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  isNearBuildingPart: 0
 --- !u!114 &2123944917
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -124,9 +124,18 @@ namespace StarterAssets
 
 		private void GroundedCheck()
 		{
-			// set sphere position, with offset
-			Vector3 spherePosition = new Vector3(transform.position.x, transform.position.y - GroundedOffset, transform.position.z);
-			Grounded = Physics.CheckSphere(spherePosition, GroundedRadius, GroundLayers, QueryTriggerInteraction.Ignore);
+			// set raycast origin at the bottom of the character controller
+			Vector3 raycastOrigin = transform.position + Vector3.up * -GroundedOffset;
+
+			// perform a raycast downwards
+			RaycastHit hit;
+			Grounded = Physics.Raycast(raycastOrigin, Vector3.down, out hit, 0.5f,  GroundLayers, QueryTriggerInteraction.Ignore);
+
+			// adjust the character controller position based on the hit point
+			if (Grounded)
+			{
+				transform.position = hit.point + Vector3.up * GroundedOffset;
+			}
 		}
 
 		private void CameraRotation()
