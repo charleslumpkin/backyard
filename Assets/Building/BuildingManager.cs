@@ -1,12 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
+using StarterAssets;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UIElements;
 
 public class BuildingManager : MonoBehaviour
 {
-    public bool isBuilding = false;
     public GameObject currentBuildingPart;
     public List<GameObject> buildingGroups = new List<GameObject>();
     public int totalParts = 0;
@@ -16,6 +16,7 @@ public class BuildingManager : MonoBehaviour
     private int rotationsCompleted = 0; // Track completed rotations on current axis
     private bool isRotating = false; // To prevent starting a new rotation before finishing the current
     private RaycastHit hitTemp;
+    private FirstPersonController firstPersonController;
 
 
     // we need to come back and update thsi based on the size of the buildingPartsArray in the BuildingGroup
@@ -79,6 +80,7 @@ public class BuildingManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        firstPersonController = GameObject.Find("PlayerCapsule").GetComponent<FirstPersonController>();
         // Get the BuildingMaterials GameObject
         GameObject buildingParts = GameObject.Find("BuildingParts");
 
@@ -145,14 +147,7 @@ public class BuildingManager : MonoBehaviour
     void Update()
     {
 
-        // Check if the right mouse button is clicked
-        if (Input.GetMouseButtonDown(1))
-        {
-            // Toggle the isBuilding variable
-            isBuilding = !isBuilding;
-        }
-
-        if (isBuilding)
+        if (firstPersonController.controlModeType == FirstPersonController.ControlMode.Building)
         {
             currentBuildingPart.SetActive(true);
 

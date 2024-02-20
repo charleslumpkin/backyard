@@ -65,15 +65,19 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets/ZL_kubes_starterKit/ScriptsEditor/scrEdit_objectTransformRandomizer.cs" />
+    <Compile Include="Assets/Character/CharacterArms.cs" />
     <Compile Include="Assets/StarterAssets/TutorialInfo/Scripts/Readme.cs" />
     <Compile Include="Assets/Character/CameraController.cs" />
     <Compile Include="Assets/StarterAssets/Mobile/Scripts/VirtualInputs/UIVirtualTouchZone.cs" />
     <Compile Include="Assets/StarterAssets/Mobile/Scripts/VirtualInputs/UIVirtualButton.cs" />
+    <Compile Include="Assets/Health &amp; Damage/DamageProducer.cs" />
     <Compile Include="Assets/StarterAssets/Mobile/Scripts/VirtualInputs/UIVirtualJoystick.cs" />
+    <Compile Include="Assets/Health &amp; Damage/WeaponController.cs" />
     <Compile Include="Assets/StarterAssets/FirstPersonController/Scripts/BasicRigidBodyPush.cs" />
     <Compile Include="Assets/StarterAssets/Mobile/Scripts/CanvasInputs/UICanvasControllerInput.cs" />
     <Compile Include="Assets/Zombies/ZombieSpawner.cs" />
     <Compile Include="Assets/Building/BuildingGroup.cs" />
+    <Compile Include="Assets/Health &amp; Damage/Health.cs" />
     <Compile Include="Assets/Zombies/ZombieController.cs" />
     <Compile Include="Assets/ZL_kubes_starterKit/ScriptsEditor/scrEdit_objectSnap.cs" />
     <Compile Include="Assets/StarterAssets/Mobile/Scripts/Utilities/MobileDisableAutoSwitchControls.cs" />

@@ -24,9 +24,10 @@ public class IdleState : ZombieState
     public override void OnEnter()
     {
         controller.AIPath.maxSpeed = 0;
-        controller.Animator.SetFloat("moveSpeed", 0.0f);
     }
 }
+
+
 
 public class WalkingState : ZombieState
 {
@@ -35,7 +36,6 @@ public class WalkingState : ZombieState
     public override void OnEnter()
     {
         controller.AIPath.maxSpeed = controller.WalkingSpeed;
-        controller.Animator.SetFloat("moveSpeed", 0.5f);
     }
 }
 
@@ -46,7 +46,6 @@ public class RunningState : ZombieState
     public override void OnEnter()
     {
         controller.AIPath.maxSpeed = controller.RunningSpeed;
-        controller.Animator.SetFloat("moveSpeed", 1.0f);
     }
 }
 
@@ -56,7 +55,6 @@ public class JumpingState : ZombieState
 
     public override void OnEnter()
     {
-
         if (controller.IsGrounded())
         {
             controller.Animator.SetBool("isJumping", true);
@@ -65,7 +63,9 @@ public class JumpingState : ZombieState
             IEnumerator JumpWithDelay()
             {
                 yield return new WaitForSeconds(0.68f);
-                controller.Rigidbody.AddForce(Vector3.up * controller.JumpForce, ForceMode.Impulse);
+                Vector3 jumpDirection = (controller.character.transform.position - controller.transform.position).normalized;
+                jumpDirection = (jumpDirection + Vector3.up) * controller.JumpForce;
+                controller.Rigidbody.AddForce(jumpDirection, ForceMode.Impulse);
             }
         }
     }
@@ -84,6 +84,7 @@ public class AttackingState : ZombieState
     {
         controller.LookAtCharacter();
         controller.Animator.SetBool("isAttacking", true);
+        controller.Animator.SetFloat("attackType", UnityEngine.Random.Range(0.0f, 1.0f));
     }
 
     public override void OnExit()
@@ -102,18 +103,7 @@ public class StuckState : ZombieState
 
     public override void OnEnter()
     {
-        // controller.transform.LookAt(controller.character.transform);
-
-
-        // if (UnityEngine.Random.Range(0, 2) == 0 && controller.IsGrounded())
-        // {
         controller.TransitionState(new JumpingState(controller));
-        // }
-        // else
-        // {
-        //     Debug.Log("Attacking");
-        //     controller.TransitionState(new AttackingState(controller));
-        // }
     }
 
     public override void Update()
@@ -145,6 +135,7 @@ public class ZombieController : MonoBehaviour
     public float checkRadius = 3f; // The radius within which to check for building parts
     public LayerMask terrainLayer; // Assign the layer for the terrain in the inspector
     public bool isNearBuildingPart = false; // Tracks whether the zombie is near a building part
+    public float transitionDuration = 0.25f; // Duration over which the posture change should occur
 
 
     private void Awake()
@@ -155,6 +146,7 @@ public class ZombieController : MonoBehaviour
         character = GameObject.Find("PlayerCapsule");
         capsuleCollider = GetComponent<CapsuleCollider>();
         terrainLayer = LayerMask.GetMask("Terrain");
+        ChangePosture();
     }
 
     private void Start()
@@ -169,44 +161,73 @@ public class ZombieController : MonoBehaviour
         CheckProximityToBuildingPart();
         CheckGroundedStatus();
 
-
+        // Handling state transitions based on keyboard input for jumping
         if (Input.GetKeyDown(KeyCode.KeypadPlus))
         {
             TransitionState(new JumpingState(this));
         }
 
+        // Handling automatic transitions based on movement and proximity
         moveCheckTimer += Time.deltaTime;
         if (moveCheckTimer >= 1.0f)
         {
-            // Debug.Log("Checking movement");
             moveCheckTimer = 0f;
             float distanceMoved = Vector3.Distance(transform.position, lastPosition);
             lastPosition = transform.position;
 
-            float distanceToCharacter = Vector3.Distance(transform.position, character.transform.position);
-            if (distanceToCharacter <= 1.5f)
+            // Checking if the zombie has moved less than a threshold distance
+            if (distanceMoved < 0.1f && !(currentState is AttackingState))
             {
-                // Debug.Log("Attacking");
-                TransitionState(new AttackingState(this));
-            }
-            else if (distanceMoved < 0.1f)
-            { // Assuming the zombie is stuck if it moves less than 0.1 units in a second
-                // Debug.Log("Stuck");
                 TransitionState(new StuckState(this));
-            }
-            else
-            {
-                // Debug.Log("Running");
-                // Decide whether to keep running or change to jumping
-                TransitionState(new RunningState(this)); // or new JumpingState(this) based on additional logic
             }
         }
 
-        if (GetComponent<SphereCollider>())
+        float distanceToCharacter = Vector3.Distance(transform.position, character.transform.position);
+        // Transition to attacking state based on proximity to the character
+        // Consider adding a flag to ensure this transition happens only once or under certain conditions
+        if (distanceToCharacter <= 1.5f && !(currentState is AttackingState))
         {
-            GetComponent<SphereCollider>().enabled = true;
+            TransitionState(new AttackingState(this));
+        }
+
+        if (distanceToCharacter > 1.5f && currentState is AttackingState)
+        {
+            TransitionState(new RunningState(this));
         }
     }
+
+    public void ChangePosture()
+    {
+        StartCoroutine(ChangePostureCoroutine());
+    }
+
+    private IEnumerator ChangePostureCoroutine()
+    {
+        float currentPosture = Animator.GetFloat("posture");
+        float targetPosture = UnityEngine.Random.Range(0.5f, 0.85f);
+
+        // Track the time we're interpolating
+        float time = 0;
+
+        while (time < transitionDuration)
+        {
+            // Increment the elapsed time
+            time += Time.deltaTime;
+
+            // Calculate the current posture value using Lerp
+            float newPosture = Mathf.Lerp(currentPosture, targetPosture, time / transitionDuration);
+
+            // Update the animator's posture parameter
+            Animator.SetFloat("posture", newPosture);
+
+            // Wait until the next frame
+            yield return null;
+        }
+
+        // Ensure the posture is set to the exact target value at the end
+        Animator.SetFloat("posture", targetPosture);
+    }
+
 
     void CheckProximityToBuildingPart()
     {
@@ -253,11 +274,11 @@ public class ZombieController : MonoBehaviour
             bool isGrounded = Physics.Raycast(transform.position, Vector3.down, capsuleCollider.height / 2 + 0.1f, terrainLayer);
             if (isGrounded)
             {
-                capsuleCollider.excludeLayers = LayerMask.GetMask("Player");
+                capsuleCollider.excludeLayers = LayerMask.GetMask("0"); // Exclude no layers
             }
             else
             {
-                capsuleCollider.excludeLayers = LayerMask.GetMask("Zombie", "Player");
+                capsuleCollider.excludeLayers = LayerMask.GetMask("Zombie");//, "Player");
             }
         }
     }

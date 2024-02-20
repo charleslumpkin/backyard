@@ -11,6 +11,14 @@ namespace StarterAssets
 #endif
 	public class FirstPersonController : MonoBehaviour
 	{
+		public enum ControlMode
+		{
+			Building,
+			Fighting
+		}
+
+		public ControlMode controlModeType = ControlMode.Fighting;
+
 		[Header("Player")]
 		[Tooltip("Move speed of the character in m/s")]
 		public float MoveSpeed = 4.0f;
@@ -51,6 +59,8 @@ namespace StarterAssets
 		[Tooltip("How far in degrees can you move the camera down")]
 		public float BottomClamp = -90.0f;
 
+		private Animator _characterArmsAnimator;
+
 		// cinemachine
 		private float _cinemachineTargetPitch;
 
@@ -64,13 +74,14 @@ namespace StarterAssets
 		private float _jumpTimeoutDelta;
 		private float _fallTimeoutDelta;
 
-	
+
 #if ENABLE_INPUT_SYSTEM
 		private PlayerInput _playerInput;
 #endif
 		private CharacterController _controller;
 		private StarterAssetsInputs _input;
 		private GameObject _mainCamera;
+		private WeaponController _weaponController;
 
 		private const float _threshold = 0.01f;
 
@@ -78,20 +89,31 @@ namespace StarterAssets
 		{
 			get
 			{
-				#if ENABLE_INPUT_SYSTEM
+#if ENABLE_INPUT_SYSTEM
 				return _playerInput.currentControlScheme == "KeyboardMouse";
-				#else
+#else
 				return false;
-				#endif
+#endif
 			}
 		}
 
 		private void Awake()
 		{
+
 			// get a reference to our main camera
 			if (_mainCamera == null)
 			{
 				_mainCamera = GameObject.FindGameObjectWithTag("MainCamera");
+			}
+
+			GameObject characterArms = GameObject.Find("CharacterArms"); // Make sure this matches the exact name in the hierarchy
+			if (characterArms != null)
+			{
+				_characterArmsAnimator = characterArms.GetComponent<Animator>();
+			}
+			else
+			{
+				Debug.LogWarning("CharacterArms object not found. Make sure it is named correctly and present in the hierarchy.");
 			}
 		}
 
@@ -101,6 +123,7 @@ namespace StarterAssets
 			_input = GetComponent<StarterAssetsInputs>();
 #if ENABLE_INPUT_SYSTEM
 			_playerInput = GetComponent<PlayerInput>();
+			_weaponController = GameObject.Find("Weapons").GetComponent<WeaponController>();
 #else
 			Debug.LogError( "Starter Assets package is missing dependencies. Please use Tools/Starter Assets/Reinstall Dependencies to fix it");
 #endif
@@ -112,9 +135,34 @@ namespace StarterAssets
 
 		private void Update()
 		{
+			changeControlMode();
 			JumpAndGravity();
 			GroundedCheck();
 			Move();
+			HandleAction();
+		}
+
+		private void HandleAction()
+		{
+			// Check the control mode to determine the context of the action
+			if (controlModeType == ControlMode.Fighting)
+			{
+				// When the action button is pressed
+				if (_input.action)
+				{
+					// Start swinging if not already swinging
+					_weaponController.StartSwinging();
+				}
+				else
+				{
+					// Stop swinging when the action button is released
+					_weaponController.StopSwinging();
+				}
+			}
+			else
+			{
+				// Handle actions for building mode or other modes here
+			}
 		}
 
 		private void LateUpdate()
@@ -129,13 +177,13 @@ namespace StarterAssets
 
 			// perform a raycast downwards
 			RaycastHit hit;
-			Grounded = Physics.Raycast(raycastOrigin, Vector3.down, out hit, 0.5f,  GroundLayers, QueryTriggerInteraction.Ignore);
+			Grounded = Physics.Raycast(raycastOrigin, Vector3.down, out hit, 0.5f, GroundLayers, QueryTriggerInteraction.Ignore);
 
 			// adjust the character controller position based on the hit point
-			if (Grounded)
-			{
-				transform.position = hit.point + Vector3.up * GroundedOffset;
-			}
+			// if (Grounded)
+			// {
+			// 	transform.position = hit.point + Vector3.up * GroundedOffset;
+			// }
 		}
 
 		private void CameraRotation()
@@ -145,7 +193,7 @@ namespace StarterAssets
 			{
 				//Don't multiply mouse input by Time.deltaTime
 				float deltaTimeMultiplier = IsCurrentDeviceMouse ? 1.0f : Time.deltaTime;
-				
+
 				_cinemachineTargetPitch += _input.look.y * RotationSpeed * deltaTimeMultiplier;
 				_rotationVelocity = _input.look.x * RotationSpeed * deltaTimeMultiplier;
 
@@ -159,6 +207,22 @@ namespace StarterAssets
 				transform.Rotate(Vector3.up * _rotationVelocity);
 			}
 		}
+
+
+		private void changeControlMode()
+		{
+			if (_input.controlMode)
+			{
+				// Code to toggle the control mode
+				controlModeType = controlModeType == ControlMode.Fighting ? ControlMode.Building : ControlMode.Fighting;
+
+				// Immediately reset the controlMode flag after processing the change
+				_input.controlMode = false;
+
+				Debug.Log($"Control Mode Changed to {controlModeType}");
+			}
+		}
+
 
 		private void Move()
 		{
@@ -205,11 +269,20 @@ namespace StarterAssets
 
 			// move the player
 			_controller.Move(inputDirection.normalized * (_speed * Time.deltaTime) + new Vector3(0.0f, _verticalVelocity, 0.0f) * Time.deltaTime);
+
+			// Calculate normalized speed value between 0 and 1
+			float normalizedSpeed = _speed / SprintSpeed; // Normalize speed based on sprint speed as maximum
+			normalizedSpeed = Mathf.Clamp(normalizedSpeed, 0f, 1f); // Ensure value is within 0 and 1
+
+			// Update the Animator's MoveSpeed parameter
+			if (_characterArmsAnimator != null)
+			{
+				_characterArmsAnimator.SetFloat("moveSpeed", normalizedSpeed);
+			}
 		}
 
 		private void JumpAndGravity()
-		{ 
-		
+		{
 			if (Grounded)
 			{
 				// reset the fall timeout timer
@@ -221,11 +294,23 @@ namespace StarterAssets
 					_verticalVelocity = -2f;
 				}
 
+				// Ensure isJumping is set to false when grounded
+				if (_characterArmsAnimator != null)
+				{
+					_characterArmsAnimator.SetBool("isJumping", false);
+				}
+
 				// Jump
 				if (_input.jump && _jumpTimeoutDelta <= 0.0f)
 				{
 					// the square root of H * -2 * G = how much velocity needed to reach desired height
 					_verticalVelocity = Mathf.Sqrt(JumpHeight * -2f * Gravity);
+
+					// Set isJumping to true when the jump is initiated
+					if (_characterArmsAnimator != null)
+					{
+						_characterArmsAnimator.SetBool("isJumping", true);
+					}
 				}
 
 				// jump timeout
@@ -255,6 +340,7 @@ namespace StarterAssets
 				_verticalVelocity += Gravity * Time.deltaTime;
 			}
 		}
+
 
 		private static float ClampAngle(float lfAngle, float lfMin, float lfMax)
 		{

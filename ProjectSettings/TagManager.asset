@@ -9,6 +9,7 @@ TagManager:
   - BuildingPart
   - Zombie
   - CinemachineTarget
+  - Weapon
   layers:
   - Default
   - TransparentFX
@@ -20,7 +21,7 @@ TagManager:
   - Terrain
   - Zombie
   - Player
-  - 
+  - Weapon
   - 
   - 
   - 
