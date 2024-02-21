@@ -84,6 +84,10 @@ namespace StarterAssets
 		private WeaponController _weaponController;
 
 		private const float _threshold = 0.01f;
+		private Vector3 originalArmsLocalPosition;
+		private Quaternion originalArmsLocalRotation;
+
+		private GameObject _characterArms;
 
 		private bool IsCurrentDeviceMouse
 		{
@@ -105,11 +109,13 @@ namespace StarterAssets
 			{
 				_mainCamera = GameObject.FindGameObjectWithTag("MainCamera");
 			}
-
-			GameObject characterArms = GameObject.Find("CharacterArms"); // Make sure this matches the exact name in the hierarchy
+			GameObject characterArms = GameObject.Find("CharacterArms");
 			if (characterArms != null)
 			{
 				_characterArmsAnimator = characterArms.GetComponent<Animator>();
+				// Store the original local position and rotation
+				originalArmsLocalPosition = characterArms.transform.localPosition;
+				originalArmsLocalRotation = characterArms.transform.localRotation;
 			}
 			else
 			{
@@ -119,8 +125,13 @@ namespace StarterAssets
 
 		private void Start()
 		{
+			ResetArmsPosition();
+
+
 			_controller = GetComponent<CharacterController>();
 			_input = GetComponent<StarterAssetsInputs>();
+			controlModeType = ControlMode.Fighting;
+
 #if ENABLE_INPUT_SYSTEM
 			_playerInput = GetComponent<PlayerInput>();
 			_weaponController = GameObject.Find("Weapons").GetComponent<WeaponController>();
@@ -135,11 +146,29 @@ namespace StarterAssets
 
 		private void Update()
 		{
+
+
 			changeControlMode();
 			JumpAndGravity();
 			GroundedCheck();
 			Move();
 			HandleAction();
+			if (Grounded && _characterArmsAnimator.GetBool("isJumping"))
+			{
+				_characterArmsAnimator.SetBool("isJumping", false);
+				ResetArmsPosition();
+			}
+
+		}
+
+		void ResetArmsPosition()
+		{
+			GameObject characterArms = GameObject.Find("CharacterArms");
+			if (characterArms != null)
+			{
+				characterArms.transform.localPosition = originalArmsLocalPosition;
+				characterArms.transform.localRotation = originalArmsLocalRotation;
+			}
 		}
 
 		private void HandleAction()
@@ -152,11 +181,13 @@ namespace StarterAssets
 				{
 					// Start swinging if not already swinging
 					_weaponController.StartSwinging();
+					// Debug.Log("Start Swinging");
 				}
 				else
 				{
 					// Stop swinging when the action button is released
 					_weaponController.StopSwinging();
+					// Debug.Log("Stop Swinging");
 				}
 			}
 			else
@@ -285,6 +316,8 @@ namespace StarterAssets
 		{
 			if (Grounded)
 			{
+
+
 				// reset the fall timeout timer
 				_fallTimeoutDelta = FallTimeout;
 

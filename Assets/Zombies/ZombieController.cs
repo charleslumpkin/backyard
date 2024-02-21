@@ -179,6 +179,7 @@ public class ZombieController : MonoBehaviour
             if (distanceMoved < 0.1f && !(currentState is AttackingState))
             {
                 TransitionState(new StuckState(this));
+                return;
             }
         }
 
@@ -188,11 +189,13 @@ public class ZombieController : MonoBehaviour
         if (distanceToCharacter <= 1.5f && !(currentState is AttackingState))
         {
             TransitionState(new AttackingState(this));
+            return;
         }
 
-        if (distanceToCharacter > 1.5f && currentState is AttackingState)
+        if (distanceToCharacter > 1.5f && !(currentState is RunningState))
         {
             TransitionState(new RunningState(this));
+            return;
         }
     }
 

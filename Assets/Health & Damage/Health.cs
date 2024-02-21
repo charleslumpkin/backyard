@@ -41,12 +41,12 @@ public class Health : MonoBehaviour
    public void TakeDamage(float damage, Vector3 forceDirection, float forceMagnitude)
     {
         currentHealth -= damage;
-        Debug.Log("Part: " + healthType + " took " + damage + " damage. Current health: " + currentHealth);
+        //Debug.Log("Part: " + healthType + " took " + damage + " damage. Current health: " + currentHealth);
 
         if (currentHealth > 0)
         {
             // Simulate force
-            StartCoroutine(ApplySimulatedForce(forceDirection.normalized, forceMagnitude));
+            // StartCoroutine(ApplySimulatedForce(forceDirection.normalized, forceMagnitude));
         }
         else
         {
@@ -54,18 +54,6 @@ public class Health : MonoBehaviour
         }
     }
 
-    IEnumerator ApplySimulatedForce(Vector3 direction, float magnitude)
-    {
-        float duration = 1.0f; // Duration over which to apply the force
-        float elapsed = 0.0f;
-
-        while (elapsed < duration)
-        {
-            transform.position += direction * (magnitude * Time.deltaTime / duration);
-            elapsed += Time.deltaTime;
-            yield return null;
-        }
-    }
 
 
     void Die()

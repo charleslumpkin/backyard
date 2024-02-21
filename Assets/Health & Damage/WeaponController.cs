@@ -33,21 +33,14 @@ public class WeaponController : MonoBehaviour
 
     public void StartSwinging()
     {
-        // Start the swinging animation or logic
-        if (!_isSwinging)
-        {
-            _isSwinging = true;
+        // Debug.Log("Swinging");
             animator.SetBool("isSwinging", true);
-        }
     }
 
     public void StopSwinging()
     {
-        if (_isSwinging)
-        {
-            _isSwinging = false;
+            // Debug.Log("Stopped Swinging");
             animator.SetBool("isSwinging", false);
-        }
     }
 
     private void showWeapon()
