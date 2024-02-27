@@ -10,6 +10,7 @@ TagManager:
   - Zombie
   - CinemachineTarget
   - Weapon
+  - ZombieBodyPart
   layers:
   - Default
   - TransparentFX

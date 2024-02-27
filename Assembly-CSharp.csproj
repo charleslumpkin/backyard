@@ -65,6 +65,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets/ZL_kubes_starterKit/ScriptsEditor/scrEdit_objectTransformRandomizer.cs" />
+    <Compile Include="Assets/KriptoFX/BloodFX/Others/UVTextureAnimator.cs" />
+    <Compile Include="Assets/Zombies/RagdollEnabler.cs" />
     <Compile Include="Assets/Character/CharacterArms.cs" />
     <Compile Include="Assets/StarterAssets/TutorialInfo/Scripts/Readme.cs" />
     <Compile Include="Assets/Character/CameraController.cs" />
@@ -72,12 +74,13 @@
     <Compile Include="Assets/StarterAssets/Mobile/Scripts/VirtualInputs/UIVirtualButton.cs" />
     <Compile Include="Assets/Health &amp; Damage/DamageProducer.cs" />
     <Compile Include="Assets/StarterAssets/Mobile/Scripts/VirtualInputs/UIVirtualJoystick.cs" />
+    <Compile Include="Assets/KriptoFX/BloodFX/Others/DemoReactivator.cs" />
     <Compile Include="Assets/Health &amp; Damage/WeaponController.cs" />
     <Compile Include="Assets/StarterAssets/FirstPersonController/Scripts/BasicRigidBodyPush.cs" />
     <Compile Include="Assets/StarterAssets/Mobile/Scripts/CanvasInputs/UICanvasControllerInput.cs" />
+    <Compile Include="Assets/Zombies/ZombieBodyManager.cs" />
     <Compile Include="Assets/Zombies/ZombieSpawner.cs" />
     <Compile Include="Assets/Building/BuildingGroup.cs" />
-    <Compile Include="Assets/Health &amp; Damage/Health.cs" />
     <Compile Include="Assets/Zombies/ZombieController.cs" />
     <Compile Include="Assets/ZL_kubes_starterKit/ScriptsEditor/scrEdit_objectSnap.cs" />
     <Compile Include="Assets/StarterAssets/Mobile/Scripts/Utilities/MobileDisableAutoSwitchControls.cs" />
@@ -85,6 +88,8 @@
     <Compile Include="Assets/Building/BuildingPart.cs" />
     <Compile Include="Assets/StarterAssets/FirstPersonController/Scripts/FirstPersonController.cs" />
     <Compile Include="Assets/StarterAssets/InputSystem/StarterAssetsInputs.cs" />
+    <Compile Include="Assets/KriptoFX/BloodFX/Others/DemoGUI.cs" />
+    <Compile Include="Assets/KriptoFX/BloodFX/Others/BFX_MouseOrbit.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets/PROTOFACTOR/Ultimate Animation Collection/Animations/Creature Animset/Animation List - Creature Animset.txt" />
@@ -94,6 +99,7 @@
     <None Include="Assets/PROTOFACTOR/Ultimate Animation Collection/Animations/Combat Bare Fists Animset/CombatBareFists_AnimationList.txt" />
     <None Include="Assets/PROTOFACTOR/Ultimate Animation Collection/Animations/Wizard Animset/Animation List - Wizard Animset.txt" />
     <None Include="Assets/PROTOFACTOR/Ultimate Animation Collection/Animations/Zombie Animset/Animation List - Zombie Animset.txt" />
+    <None Include="Assets/KriptoFX/BloodFX/Shaders/BloodNoSmooth.shader" />
     <None Include="Assets/PROTOFACTOR/Ultimate Animation Collection/Animations/Push&amp;Pull Cube Animset/Animation List - Cube Push Pull Animset.txt" />
     <None Include="Assets/ZL_kubes_starterKit/Shaders/sh_kubeshader_topdown.shader" />
     <None Include="Assets/PolygonZombies/Shaders/POLYGON_Zombies.shader" />
@@ -103,12 +109,14 @@
     <None Include="Assets/PROTOFACTOR/Ultimate Animation Collection/Animations/Double Guns Animset/Animation List - Double Guns Animset.txt" />
     <None Include="Assets/PROTOFACTOR/Ultimate Animation Collection/Animations/Basic Locomotion Animset/Animation List - Basic Locomotion Animset.txt" />
     <None Include="Assets/PROTOFACTOR/Ultimate Animation Collection/Animations/Bazooka Animset/Animation List - Bazooka Animset.txt" />
+    <None Include="Assets/KriptoFX/BloodFX/Shaders/Blood.shader" />
     <None Include="Assets/PROTOFACTOR/Ultimate Animation Collection/Animations/Fencing Animset/Animation List - Fencing Animset.txt" />
     <None Include="Assets/PROTOFACTOR/Ultimate Animation Collection/Animations/2Handed Gun Animset/Animation List - 2 Handed Gun Animset.txt" />
     <None Include="Assets/PROTOFACTOR/Ultimate Animation Collection/Animations/Hostage Animset/FBX motions/Animation List - Hostage Animset.txt" />
     <None Include="Assets/PROTOFACTOR/Ultimate Animation Collection/Animations/2Handed Melee Weapon Animset/Animation List - 2 Handed Melee Weapon Animset.txt" />
     <None Include="Assets/PROTOFACTOR/Ultimate Animation Collection/Animations/Campfire Animset/Animation List - Campfire Animset.txt" />
     <None Include="Assets/PROTOFACTOR/Ultimate Animation Collection/Animations/Dual Swords Animset/Animation List - Dual Swords Animset.txt" />
+    <None Include="Assets/KriptoFX/BloodFX/Readme.txt" />
     <None Include="Assets/PolygonApocalypse/Shader/POLYGON_Triplanar.shader" />
     <None Include="Assets/PROTOFACTOR/Ultimate Animation Collection/Animations/Assault Rifle Animset/Animation List - Assault Rifle Animset.txt" />
     <None Include="Assets/PROTOFACTOR/Ultimate Animation Collection/Animations/Bow &amp; Arrow Animset/Animation List - Bow&amp;Arrow Animset.txt" />

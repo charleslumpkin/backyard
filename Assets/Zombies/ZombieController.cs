@@ -137,6 +137,13 @@ public class ZombieController : MonoBehaviour
     public bool isNearBuildingPart = false; // Tracks whether the zombie is near a building part
     public float transitionDuration = 0.25f; // Duration over which the posture change should occur
 
+    public float maxHealth = 10f;
+    public float currentHealth;
+    public bool isDead = false;
+
+    public GameObject rootBone;
+
+
 
     private void Awake()
     {
@@ -151,12 +158,28 @@ public class ZombieController : MonoBehaviour
 
     private void Start()
     {
+        currentHealth = maxHealth;
         lastPosition = transform.position;
         TransitionState(new RunningState(this)); // Default state to Running
     }
 
     private void Update()
     {
+
+        if (currentHealth <= 0 && !isDead)
+        {
+
+            Debug.Log("Zombie is dead");
+            isDead = true;
+            //ActivateRagdoll();
+            // Optionally, set a delay before destruction to allow the ragdoll to settle.
+            //Destroy(gameObject, 5f); // Adjust the delay as needed.
+        }
+        if (isDead)
+        {
+            return;
+        }
+
         currentState.Update();
         CheckProximityToBuildingPart();
         CheckGroundedStatus();
@@ -199,6 +222,9 @@ public class ZombieController : MonoBehaviour
         }
     }
 
+
+   
+
     public void ChangePosture()
     {
         StartCoroutine(ChangePostureCoroutine());
@@ -230,6 +256,14 @@ public class ZombieController : MonoBehaviour
         // Ensure the posture is set to the exact target value at the end
         Animator.SetFloat("posture", targetPosture);
     }
+
+    public void TakeDamage(float damage)
+    {
+        currentHealth -= damage;
+
+    }
+
+
 
 
     void CheckProximityToBuildingPart()
@@ -311,5 +345,6 @@ public class ZombieController : MonoBehaviour
             transform.rotation = Quaternion.Euler(0, lookRotation.eulerAngles.y, 0);
         }
     }
+
 
 }

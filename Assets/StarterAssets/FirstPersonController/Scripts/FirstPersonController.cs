@@ -250,7 +250,7 @@ namespace StarterAssets
 				// Immediately reset the controlMode flag after processing the change
 				_input.controlMode = false;
 
-				Debug.Log($"Control Mode Changed to {controlModeType}");
+//				Debug.Log($"Control Mode Changed to {controlModeType}");
 			}
 		}
 

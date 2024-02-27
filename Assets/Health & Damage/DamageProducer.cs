@@ -1,7 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using StarterAssets;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class DamageProducer : MonoBehaviour
@@ -11,63 +9,40 @@ public class DamageProducer : MonoBehaviour
         ZombieBlunt,
         ZombieBite,
         WeaponEdged,
-        WeapongBlunt
+        WeaponBlunt
     }
 
     public float lowerDamage = 1.0f;
     public float upperDamage = 5.0f;
-    public float forceMagnitude = 10.0f; // New: Define the magnitude of the force to apply
+    public float forceMagnitude = 10.0f; // The magnitude of the force to apply
     public DamageType damageType = DamageType.ZombieBlunt;
-    public FirstPersonController player;
-    public Animator animator;
 
-    private bool isDamaging;
-
-    void Start()
+    private void ApplyDamage(Collider target, float damage, Vector3 forceDirection)
     {
-        isDamaging = false;
-        player = GameObject.Find("PlayerCapsule").GetComponent<FirstPersonController>();
-        animator = GameObject.Find("CharacterArms").GetComponent<Animator>();
+        // Attempt to get the ZombieBodyManager from the parent of the hit collider
+        ZombieBodyManager bodyManager = target.GetComponentInParent<ZombieBodyManager>();
+
+        if (bodyManager != null)
+        {
+            // Assuming each body part has a unique identifier (e.g., a tag or name)
+            bodyManager.TakeDamage(target.tag, damage, forceDirection);
+        }
     }
 
-
-    private float calculateDamage()
+    private float CalculateDamage()
     {
         return Random.Range(lowerDamage, upperDamage);
     }
 
-    private IEnumerator DamageCoroutine(Collider target, float interval)
-    {
-        while (target.GetComponent<Health>() != null && player.controlModeType == FirstPersonController.ControlMode.Fighting)
-        {
-            Health targetHealth = target.GetComponent<Health>();
-            float damage = calculateDamage();
-            Vector3 forceDirection = (target.transform.position - transform.position).normalized;
-
-            targetHealth.TakeDamage(damage, forceDirection, forceMagnitude);
-
-            yield return new WaitForSeconds(interval); // Wait for 'interval' seconds before applying damage again
-        }
-    }
-
     private void OnTriggerEnter(Collider other)
     {
-        Debug.Log("Part: " + other.name + " entered the trigger");
+        Debug.Log("Triggered: " + other.name);  
 
-        if (other.GetComponent<Health>() != null && !isDamaging)
+        if (other.CompareTag("ZombieBodyPart")) // Make sure your body parts have this tag
         {
-            Debug.Log("Part: " + other.name + " is damaging");
-            isDamaging = true;
-            StartCoroutine(DamageCoroutine(other, 1.0f)); // Example: Apply damage every 1 second
-        }
-    }
-
-    private void OnTriggerExit(Collider other)
-    {
-        if (other.GetComponent<Health>() != null)
-        {
-            StopAllCoroutines(); // Stop applying damage when the object exits
-            isDamaging = false;
+            float damage = CalculateDamage();
+            Vector3 forceDirection = (other.transform.position - transform.position).normalized;
+            ApplyDamage(other, damage, forceDirection);
         }
     }
 }
