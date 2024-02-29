@@ -9,7 +9,6 @@ public class WeaponController : MonoBehaviour
 
     private FirstPersonController player;
     Animator animator;
-    bool _isSwinging = false;
     // Start is called before the first frame update
     void Start()
     {
@@ -20,7 +19,7 @@ public class WeaponController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(player.controlModeType == FirstPersonController.ControlMode.Fighting)
+        if (player.controlModeType == FirstPersonController.ControlMode.Fighting)
         {
             showWeapon();
         }
@@ -28,19 +27,19 @@ public class WeaponController : MonoBehaviour
         {
             hideWeapon();
         }
-        
+
     }
 
     public void StartSwinging()
     {
-        // Debug.Log("Swinging");
-            animator.SetBool("isSwinging", true);
+        // Debug.Log("Weapon Controller: Start Swinging");
+        animator.SetBool("isSwinging", true);
     }
 
     public void StopSwinging()
     {
-            // Debug.Log("Stopped Swinging");
-            animator.SetBool("isSwinging", false);
+        // Debug.Log("Weapon Controller: Stop Swinging");
+        animator.SetBool("isSwinging", false);
     }
 
     private void showWeapon()
@@ -49,11 +48,11 @@ public class WeaponController : MonoBehaviour
         transform.GetChild(0).gameObject.SetActive(true);
     }
 
-    private void  hideWeapon()
+    private void hideWeapon()
     {
         //deactivate the first child
         transform.GetChild(0).gameObject.SetActive(false);
     }
 
-    
+
 }

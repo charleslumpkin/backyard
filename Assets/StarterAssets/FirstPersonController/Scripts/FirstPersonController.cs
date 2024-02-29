@@ -74,6 +74,8 @@ namespace StarterAssets
 		private float _jumpTimeoutDelta;
 		private float _fallTimeoutDelta;
 
+		private bool _isActionPressed = false;
+
 
 #if ENABLE_INPUT_SYSTEM
 		private PlayerInput _playerInput;
@@ -159,6 +161,7 @@ namespace StarterAssets
 				ResetArmsPosition();
 			}
 
+
 		}
 
 		void ResetArmsPosition()
@@ -171,20 +174,25 @@ namespace StarterAssets
 			}
 		}
 
+
 		private void HandleAction()
 		{
 			// Check the control mode to determine the context of the action
 			if (controlModeType == ControlMode.Fighting)
 			{
 				// When the action button is pressed
-				if (_input.action)
+				if (_input.action && !_isActionPressed)
 				{
+					// Mark as action pressed
+					_isActionPressed = true;
 					// Start swinging if not already swinging
 					_weaponController.StartSwinging();
 					// Debug.Log("Start Swinging");
 				}
-				else
+				else if (!_input.action && _isActionPressed)
 				{
+					// Mark as action not pressed
+					_isActionPressed = false;
 					// Stop swinging when the action button is released
 					_weaponController.StopSwinging();
 					// Debug.Log("Stop Swinging");
@@ -250,7 +258,7 @@ namespace StarterAssets
 				// Immediately reset the controlMode flag after processing the change
 				_input.controlMode = false;
 
-//				Debug.Log($"Control Mode Changed to {controlModeType}");
+				//				Debug.Log($"Control Mode Changed to {controlModeType}");
 			}
 		}
 
@@ -308,7 +316,10 @@ namespace StarterAssets
 			// Update the Animator's MoveSpeed parameter
 			if (_characterArmsAnimator != null)
 			{
-				_characterArmsAnimator.SetFloat("moveSpeed", normalizedSpeed);
+				if (_characterArmsAnimator.GetBool("isSwinging") == false)
+				{
+					_characterArmsAnimator.SetFloat("moveSpeed", normalizedSpeed);
+				}
 			}
 		}
 

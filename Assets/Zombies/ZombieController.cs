@@ -95,7 +95,6 @@ public class AttackingState : ZombieState
 
 public class StuckState : ZombieState
 {
-    private float timeInState = 0f;
     private const float checkInterval = 2f;
 
     public StuckState(ZombieController controller) : base(controller) { }
@@ -110,6 +109,19 @@ public class StuckState : ZombieState
     {
 
     }
+}
+
+public class CrawlingState : ZombieState
+{
+    public CrawlingState(ZombieController controller) : base(controller) { }
+
+    public override void OnEnter()
+    {
+        controller.AIPath.maxSpeed = controller.WalkingSpeed;
+        controller.Animator.SetBool("isCrawling", true);
+    }
+
+
 }
 
 public class ZombieController : MonoBehaviour
@@ -131,7 +143,7 @@ public class ZombieController : MonoBehaviour
     public AIPath AIPath => aiPath;
     public Rigidbody Rigidbody => rb;
 
-    private CapsuleCollider capsuleCollider; // Reference to the zombie's capsule collider
+   // private CapsuleCollider capsuleCollider; // Reference to the zombie's capsule collider
     public float checkRadius = 3f; // The radius within which to check for building parts
     public LayerMask terrainLayer; // Assign the layer for the terrain in the inspector
     public bool isNearBuildingPart = false; // Tracks whether the zombie is near a building part
@@ -151,7 +163,7 @@ public class ZombieController : MonoBehaviour
         aiPath = GetComponent<AIPath>();
         rb = GetComponent<Rigidbody>();
         character = GameObject.Find("PlayerCapsule");
-        capsuleCollider = GetComponent<CapsuleCollider>();
+      //  capsuleCollider = GetComponent<CapsuleCollider>();
         terrainLayer = LayerMask.GetMask("Terrain");
         ChangePosture();
     }
@@ -169,7 +181,6 @@ public class ZombieController : MonoBehaviour
         if (currentHealth <= 0 && !isDead)
         {
 
-            Debug.Log("Zombie is dead");
             isDead = true;
             //ActivateRagdoll();
             // Optionally, set a delay before destruction to allow the ragdoll to settle.
@@ -306,18 +317,18 @@ public class ZombieController : MonoBehaviour
 
     void CheckGroundedStatus()
     {
-        if (!isNearBuildingPart) // Only check for grounding if the zombie has left a building part
-        {
-            bool isGrounded = Physics.Raycast(transform.position, Vector3.down, capsuleCollider.height / 2 + 0.1f, terrainLayer);
-            if (isGrounded)
-            {
-                capsuleCollider.excludeLayers = LayerMask.GetMask("0"); // Exclude no layers
-            }
-            else
-            {
-                capsuleCollider.excludeLayers = LayerMask.GetMask("Zombie");//, "Player");
-            }
-        }
+        // if (!isNearBuildingPart) // Only check for grounding if the zombie has left a building part
+        // {
+        //     bool isGrounded = Physics.Raycast(transform.position, Vector3.down, capsuleCollider.height / 2 + 0.1f, terrainLayer);
+        //     if (isGrounded)
+        //     {
+        //         capsuleCollider.excludeLayers = LayerMask.GetMask("0"); // Exclude no layers
+        //     }
+        //     else
+        //     {
+        //         capsuleCollider.excludeLayers = LayerMask.GetMask("Zombie");//, "Player");
+        //     }
+        // }
     }
 
     public void TransitionState(ZombieState newState)

@@ -24,8 +24,14 @@ public class DamageProducer : MonoBehaviour
 
         if (bodyManager != null)
         {
-            // Assuming each body part has a unique identifier (e.g., a tag or name)
-            bodyManager.TakeDamage(target.tag, damage, forceDirection);
+            // Use the GameObject name or another identifier to derive the body part name
+            string bodyPartName = target.gameObject.name;
+
+            // Optionally, map the GameObject name to the expected body part name if they don't match directly
+            // Example: if (bodyPartName == "ZombieHead") bodyPartName = "head";
+
+            // Assuming each body part has a unique identifier (e.g., a tag or name) that matches the field names in ZombieBodyManager
+            bodyManager.TakeDamage(bodyPartName, damage, forceDirection);
         }
     }
 
@@ -36,13 +42,24 @@ public class DamageProducer : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        Debug.Log("Triggered: " + other.name);  
+        // Debug.Log("Triggered: " + other.name);
 
-        if (other.CompareTag("ZombieBodyPart")) // Make sure your body parts have this tag
+        if (other.CompareTag("ZombieBodyPart")) // Ensure body parts are tagged correctly
         {
             float damage = CalculateDamage();
-            Vector3 forceDirection = (other.transform.position - transform.position).normalized;
-            ApplyDamage(other, damage, forceDirection);
+            Vector3 forceDirection = (other.transform.position - transform.position).normalized * forceMagnitude;
+
+            // Assuming the body part's name is the GameObject name
+            string bodyPartName = other.gameObject.name; // Adjust this if your identification logic differs
+
+            // Find the ZombieBodyManager in the parent
+            ZombieBodyManager bodyManager = other.GetComponentInParent<ZombieBodyManager>();
+            if (bodyManager != null)
+            {
+                // Correctly pass the body part name. You might need to adjust the naming to match.
+                bodyManager.TakeDamage(bodyPartName, damage, forceDirection);
+            }
         }
     }
+
 }

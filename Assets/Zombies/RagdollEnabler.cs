@@ -9,9 +9,6 @@ public class RagdollEnabler : MonoBehaviour
     private Transform RagdollRoot;
     [SerializeField]
     private bool StartRagdoll = false;
-
-    public Rigidbody mainCapsuleRigidbody;
-    public CapsuleCollider mainCapsuleCollider;
     public Seeker seeker;
     public AIPath aiPath;
     public AIDestinationSetter aiDestinationSetter;
@@ -63,7 +60,6 @@ public class RagdollEnabler : MonoBehaviour
         }
         foreach (Collider collider in Colliders)
         {
-            // collider.enabled = true;
             collider.isTrigger = false;
         }
         foreach (Rigidbody rigidbody in Rigidbodies)
@@ -73,8 +69,7 @@ public class RagdollEnabler : MonoBehaviour
             rigidbody.useGravity = true;
         }
 
-        mainCapsuleCollider.enabled = false;
-        mainCapsuleRigidbody.isKinematic = true;
+
         seeker.enabled = false;
         aiPath.enabled = false;
         aiDestinationSetter.enabled = false;
@@ -89,21 +84,17 @@ public class RagdollEnabler : MonoBehaviour
         }
         foreach (Collider collider in Colliders)
         {
-            // collider.enabled = false;
             collider.isTrigger = true;
         }
         foreach (Rigidbody rigidbody in Rigidbodies)
         {
-            rigidbody.detectCollisions = false;
+            rigidbody.detectCollisions = true;
             rigidbody.useGravity = false;
         }
 
-        mainCapsuleCollider.enabled = true;
-        mainCapsuleRigidbody.isKinematic = false;
         seeker.enabled = true;
         aiPath.enabled = true;
-        aiDestinationSetter.enabled = true;
-        
+        aiDestinationSetter.enabled = true;       
 
     }
 }

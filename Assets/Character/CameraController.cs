@@ -8,6 +8,13 @@ public class CameraController : MonoBehaviour
     private float verticalRotation = 0f;
     private float maxVerticalAngle = 90f;
 
+    public Camera firstPersonCamera;
+    public Camera thirdPersonCamera;
+    private bool isThirdPersonViewActive = false;
+
+    // Reference to the first-person controller script, adjust the type as needed
+    public MonoBehaviour firstPersonController;
+
     // Length of the debug ray.
     private float rayLength = 10f; // You can adjust this value as needed
 
@@ -20,6 +27,26 @@ public class CameraController : MonoBehaviour
             // Draw the debug ray
             DrawDebugRay();
         }
+
+        if (Input.GetKeyDown(KeyCode.P))
+        {
+            isThirdPersonViewActive = !isThirdPersonViewActive;
+            ToggleCameraView(isThirdPersonViewActive);
+        }
+    }
+
+    void ToggleCameraView(bool isThirdPerson)
+    {
+        thirdPersonCamera.enabled = isThirdPerson;
+        firstPersonCamera.enabled = !isThirdPerson;
+
+        // Optionally, enable/disable the first-person controller or components that should only be active in first-person view
+        if (firstPersonController != null)
+        {
+            firstPersonController.enabled = !isThirdPerson;
+        }
+
+        // If there are any other components or GameObjects that need to be toggled with the view, do so here
     }
 
     void HandleCameraRotation()
