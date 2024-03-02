@@ -120,6 +120,11 @@ public class ZombieBodyManager : MonoBehaviour
                 hitSide = 0.75f;
             }
 
+            SwingRelayer swingRelayer = GetComponentInChildren<SwingRelayer>();
+            if (swingRelayer != null)
+            {
+                swingRelayer.RelayEndAttack();
+            }
             
 
             //Debug.Log("Hit side: " + hitSide);

@@ -1,3 +1,4 @@
+using System;
 using Pathfinding;
 using UnityEngine;
 
@@ -60,13 +61,34 @@ public class RagdollEnabler : MonoBehaviour
         }
         foreach (Collider collider in Colliders)
         {
-            collider.isTrigger = false;
+            if (collider.gameObject.name == "Hand_L" || collider.gameObject.name == "Hand_R")
+            {
+                Destroy(collider);
+
+            }
+            else
+            {
+                collider.isTrigger = false;
+            }
         }
         foreach (Rigidbody rigidbody in Rigidbodies)
         {
-            rigidbody.velocity = Vector3.zero;
-            rigidbody.detectCollisions = true;
-            rigidbody.useGravity = true;
+            if (rigidbody.gameObject.name == "Hand_L" || rigidbody.gameObject.name == "Hand_R")
+            {
+                 Destroy(rigidbody);
+            }
+            else
+            {
+                rigidbody.isKinematic = false;
+                rigidbody.velocity = Vector3.zero;
+                rigidbody.detectCollisions = true;
+                rigidbody.useGravity = true;
+            }
+        }
+
+        foreach (DamageProducer damageProducer in GetComponentsInChildren<DamageProducer>())
+        {
+            Destroy(damageProducer);
         }
 
 
@@ -94,7 +116,7 @@ public class RagdollEnabler : MonoBehaviour
 
         seeker.enabled = true;
         aiPath.enabled = true;
-        aiDestinationSetter.enabled = true;       
+        aiDestinationSetter.enabled = true;
 
     }
 }
