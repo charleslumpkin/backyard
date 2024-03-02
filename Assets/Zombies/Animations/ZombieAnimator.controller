@@ -73,7 +73,7 @@ BlendTree:
     m_CycleOffset: 0
     m_DirectBlendParameter: posture
     m_Mirror: 0
-  m_BlendParameter: posture
+  m_BlendParameter: hitSide
   m_BlendParameterY: posture
   m_MinThreshold: 0
   m_MaxThreshold: 1
@@ -112,7 +112,7 @@ AnimatorState:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: New State
+  m_Name: Crawling
   m_Speed: 1
   m_CycleOffset: 0
   m_Transitions: []
@@ -255,6 +255,12 @@ AnimatorController:
     m_Controller: {fileID: 0}
   - m_Name: isCrawling
     m_Type: 4
+    m_DefaultFloat: 0
+    m_DefaultInt: 0
+    m_DefaultBool: 0
+    m_Controller: {fileID: 0}
+  - m_Name: hitSide
+    m_Type: 1
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0

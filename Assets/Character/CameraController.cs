@@ -18,6 +18,11 @@ public class CameraController : MonoBehaviour
     // Length of the debug ray.
     private float rayLength = 10f; // You can adjust this value as needed
 
+    private void Start()
+    {
+        ToggleCameraView(isThirdPersonViewActive);
+    }
+
     void Update()
     {
         if (Cursor.lockState == CursorLockMode.Locked)

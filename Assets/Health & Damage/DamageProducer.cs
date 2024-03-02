@@ -1,5 +1,6 @@
 using System.Collections;
-using System.Collections.Generic;
+using StarterAssets;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class DamageProducer : MonoBehaviour
@@ -12,25 +13,45 @@ public class DamageProducer : MonoBehaviour
         WeaponBlunt
     }
 
+
+
     public float lowerDamage = 1.0f;
     public float upperDamage = 5.0f;
     public float forceMagnitude = 10.0f; // The magnitude of the force to apply
     public DamageType damageType = DamageType.ZombieBlunt;
+    private bool canDealDamage = false; // Tracks if we can deal damage
+    private GameObject zombie;
+    private SwingRelayer swingRelayer;
+
+
+    void Awake()
+    {
+        zombie = transform.GetComponentInParent<ZombieController>().gameObject;
+        swingRelayer = zombie.GetComponent<SwingRelayer>();
+    }
+
+    // This method is called via Animation Event at the start of the swing animation
+    public void BeginAttack()
+    {
+        Debug.Log("DamageProducer.BeginAttack");
+        canDealDamage = true; // Enable damage
+    }
+
+    // This method is called via Animation Event at the end of the swing animation
+    public void EndAttack()
+    {
+        Debug.Log("DamageProducer.EndAttack");
+        canDealDamage = false; // Disable damage for the rest of the swing
+    }
+
 
     private void ApplyDamage(Collider target, float damage, Vector3 forceDirection)
     {
-        // Attempt to get the ZombieBodyManager from the parent of the hit collider
-        ZombieBodyManager bodyManager = target.GetComponentInParent<ZombieBodyManager>();
 
+        ZombieBodyManager bodyManager = target.GetComponentInParent<ZombieBodyManager>();
         if (bodyManager != null)
         {
-            // Use the GameObject name or another identifier to derive the body part name
             string bodyPartName = target.gameObject.name;
-
-            // Optionally, map the GameObject name to the expected body part name if they don't match directly
-            // Example: if (bodyPartName == "ZombieHead") bodyPartName = "head";
-
-            // Assuming each body part has a unique identifier (e.g., a tag or name) that matches the field names in ZombieBodyManager
             bodyManager.TakeDamage(bodyPartName, damage, forceDirection);
         }
     }
@@ -42,23 +63,36 @@ public class DamageProducer : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        // Debug.Log("Triggered: " + other.name);
-
-        if (other.CompareTag("ZombieBodyPart")) // Ensure body parts are tagged correctly
+        
+        if (canDealDamage)
         {
-            float damage = CalculateDamage();
-            Vector3 forceDirection = (other.transform.position - transform.position).normalized * forceMagnitude;
-
-            // Assuming the body part's name is the GameObject name
-            string bodyPartName = other.gameObject.name; // Adjust this if your identification logic differs
-
-            // Find the ZombieBodyManager in the parent
-            ZombieBodyManager bodyManager = other.GetComponentInParent<ZombieBodyManager>();
-            if (bodyManager != null)
+            Debug.Log("Can deal damage");
+            if ((damageType == DamageType.WeaponBlunt || damageType == DamageType.WeaponEdged) && other.CompareTag("ZombieBodyPart"))
             {
-                // Correctly pass the body part name. You might need to adjust the naming to match.
-                bodyManager.TakeDamage(bodyPartName, damage, forceDirection);
+                Debug.Log("Player hit zombie body part: " + other.name);
+                float damage = CalculateDamage();
+                Vector3 forceDirection = (other.transform.position - transform.position).normalized * forceMagnitude;
+                string bodyPartName = other.gameObject.name;
+
+                ZombieBodyManager bodyManager = other.GetComponentInParent<ZombieBodyManager>();
+                if (bodyManager != null)
+                {
+                    bodyManager.TakeDamage(bodyPartName, damage, forceDirection);
+                    canDealDamage = false; // Optionally reset here to ensure only the first hit is registered
+                }
             }
+
+            if ((damageType == DamageType.ZombieBlunt || damageType == DamageType.ZombieBite) && other.CompareTag("Player")) 
+            {
+
+                float damage = CalculateDamage();
+                Vector3 forceDirection = (other.transform.position - transform.position).normalized * forceMagnitude;
+                other.transform.root.GetComponent<FirstPersonController>().TakeDamage(damage, forceDirection);
+                canDealDamage = false; // Optionally reset here to ensure only the first hit is registered
+                swingRelayer.RelayEndAttack();
+            }
+
+
         }
     }
 

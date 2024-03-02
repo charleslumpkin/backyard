@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using System.Xml.Serialization;
+using UnityEngine;
 #if ENABLE_INPUT_SYSTEM
 using UnityEngine.InputSystem;
 #endif
@@ -76,6 +78,9 @@ namespace StarterAssets
 
 		private bool _isActionPressed = false;
 
+		public float maxBodyHealth = 100f;
+		public float currentBodyHealth = 100f;	
+
 
 #if ENABLE_INPUT_SYSTEM
 		private PlayerInput _playerInput;
@@ -105,6 +110,7 @@ namespace StarterAssets
 
 		private void Awake()
 		{
+			currentBodyHealth = maxBodyHealth;
 
 			// get a reference to our main camera
 			if (_mainCamera == null)
@@ -155,6 +161,7 @@ namespace StarterAssets
 			GroundedCheck();
 			Move();
 			HandleAction();
+
 			if (Grounded && _characterArmsAnimator.GetBool("isJumping"))
 			{
 				_characterArmsAnimator.SetBool("isJumping", false);
@@ -180,9 +187,11 @@ namespace StarterAssets
 			// Check the control mode to determine the context of the action
 			if (controlModeType == ControlMode.Fighting)
 			{
+				//Debug.Log("Fighting Mode");
 				// When the action button is pressed
 				if (_input.action && !_isActionPressed)
 				{
+					// Debug.Log("Action Pressed");
 					// Mark as action pressed
 					_isActionPressed = true;
 					// Start swinging if not already swinging
@@ -191,6 +200,7 @@ namespace StarterAssets
 				}
 				else if (!_input.action && _isActionPressed)
 				{
+					// Debug.Log("Action Released");
 					// Mark as action not pressed
 					_isActionPressed = false;
 					// Stop swinging when the action button is released
@@ -246,6 +256,46 @@ namespace StarterAssets
 				transform.Rotate(Vector3.up * _rotationVelocity);
 			}
 		}
+
+		void OnTriggerEnter(Collider other)
+		{
+			//Debug.Log("Player hit something with tag: " + other.tag);
+		}
+
+
+		public void TakeDamage(float damage, Vector3 forceDirection)
+		{
+			currentBodyHealth -= damage;
+			GetComponentInChildren<ScreenDamage>().CurrentHealth = currentBodyHealth;
+			if (currentBodyHealth <= 0)
+			{
+				Die();
+			}
+		}
+
+		//heal over 5 seconds
+		public void Heal(float healAmount)
+		{
+			StartCoroutine(HealOverTime(healAmount, 5.0f));
+		}
+
+		IEnumerator HealOverTime(float healAmount, float time)
+		{
+			float elapsedTime = 0;
+			while (elapsedTime < time)
+			{
+				currentBodyHealth += healAmount * Time.deltaTime;
+				elapsedTime += Time.deltaTime;
+				yield return null;
+			}
+		}
+
+		public void Die()
+		{
+			// Die
+			Debug.Log("Player Died");
+		}
+
 
 
 		private void changeControlMode()

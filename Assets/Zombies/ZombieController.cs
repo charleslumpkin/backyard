@@ -49,6 +49,23 @@ public class RunningState : ZombieState
     }
 }
 
+public class TakeDamageState : ZombieState
+{
+    public TakeDamageState(ZombieController controller) : base(controller) { }
+
+    public override void OnEnter()
+    {
+        controller.Animator.SetBool("isTakingDamage", true);
+        controller.AIPath.maxSpeed = 0;
+    }
+
+    public override void OnExit()
+    {
+        controller.Animator.SetBool("isTakingDamage", false);
+        controller.AIPath.maxSpeed = controller.WalkingSpeed;
+    }
+}
+
 public class JumpingState : ZombieState
 {
     public JumpingState(ZombieController controller) : base(controller) { }
@@ -143,18 +160,14 @@ public class ZombieController : MonoBehaviour
     public AIPath AIPath => aiPath;
     public Rigidbody Rigidbody => rb;
 
-   // private CapsuleCollider capsuleCollider; // Reference to the zombie's capsule collider
+    // private CapsuleCollider capsuleCollider; // Reference to the zombie's capsule collider
     public float checkRadius = 3f; // The radius within which to check for building parts
     public LayerMask terrainLayer; // Assign the layer for the terrain in the inspector
     public bool isNearBuildingPart = false; // Tracks whether the zombie is near a building part
     public float transitionDuration = 0.25f; // Duration over which the posture change should occur
 
-    public float maxHealth = 10f;
-    public float currentHealth;
-    public bool isDead = false;
-
+    public CapsuleCollider capsuleCollider;
     public GameObject rootBone;
-
 
 
     private void Awake()
@@ -163,14 +176,13 @@ public class ZombieController : MonoBehaviour
         aiPath = GetComponent<AIPath>();
         rb = GetComponent<Rigidbody>();
         character = GameObject.Find("PlayerCapsule");
-      //  capsuleCollider = GetComponent<CapsuleCollider>();
+        capsuleCollider = GetComponent<CapsuleCollider>();
         terrainLayer = LayerMask.GetMask("Terrain");
         ChangePosture();
     }
 
     private void Start()
     {
-        currentHealth = maxHealth;
         lastPosition = transform.position;
         TransitionState(new RunningState(this)); // Default state to Running
     }
@@ -178,19 +190,11 @@ public class ZombieController : MonoBehaviour
     private void Update()
     {
 
-        if (currentHealth <= 0 && !isDead)
-        {
 
-            isDead = true;
-            //ActivateRagdoll();
-            // Optionally, set a delay before destruction to allow the ragdoll to settle.
-            //Destroy(gameObject, 5f); // Adjust the delay as needed.
-        }
-        if (isDead)
+        if (animator.GetBool("isTakingDamage"))
         {
             return;
         }
-
         currentState.Update();
         CheckProximityToBuildingPart();
         CheckGroundedStatus();
@@ -234,7 +238,6 @@ public class ZombieController : MonoBehaviour
     }
 
 
-   
 
     public void ChangePosture()
     {
@@ -266,12 +269,6 @@ public class ZombieController : MonoBehaviour
 
         // Ensure the posture is set to the exact target value at the end
         Animator.SetFloat("posture", targetPosture);
-    }
-
-    public void TakeDamage(float damage)
-    {
-        currentHealth -= damage;
-
     }
 
 
@@ -317,18 +314,18 @@ public class ZombieController : MonoBehaviour
 
     void CheckGroundedStatus()
     {
-        // if (!isNearBuildingPart) // Only check for grounding if the zombie has left a building part
-        // {
-        //     bool isGrounded = Physics.Raycast(transform.position, Vector3.down, capsuleCollider.height / 2 + 0.1f, terrainLayer);
-        //     if (isGrounded)
-        //     {
-        //         capsuleCollider.excludeLayers = LayerMask.GetMask("0"); // Exclude no layers
-        //     }
-        //     else
-        //     {
-        //         capsuleCollider.excludeLayers = LayerMask.GetMask("Zombie");//, "Player");
-        //     }
-        // }
+        if (!isNearBuildingPart) // Only check for grounding if the zombie has left a building part
+        {
+            bool isGrounded = Physics.Raycast(transform.position, Vector3.down, capsuleCollider.height / 2 + 0.1f, terrainLayer);
+            if (isGrounded)
+            {
+                capsuleCollider.excludeLayers = LayerMask.GetMask("0"); // Exclude no layers
+            }
+            else
+            {
+                capsuleCollider.excludeLayers = LayerMask.GetMask("Zombie");//, "Player");
+            }
+        }
     }
 
     public void TransitionState(ZombieState newState)
