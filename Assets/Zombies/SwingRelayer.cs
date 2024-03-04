@@ -14,7 +14,7 @@ public class SwingRelayer : MonoBehaviour
     
     public void RelayBeginAttack()
     {
-        Debug.Log("RelayBeginAttack");
+        // Debug.Log("RelayBeginAttack");
         // Iterate through each DamageProducer and call BeginAttack
         foreach (var damageProducer in damageProducers)
         {
@@ -27,7 +27,7 @@ public class SwingRelayer : MonoBehaviour
 
     public void RelayEndAttack()
     {  
-        Debug.Log("RelayEndAttack");
+        // Debug.Log("RelayEndAttack");
         // Iterate through each DamageProducer and call EndAttack
         foreach (var damageProducer in damageProducers)
         {

@@ -26,21 +26,27 @@ public class DamageProducer : MonoBehaviour
 
     void Awake()
     {
-        zombie = transform.GetComponentInParent<ZombieController>().gameObject;
-        swingRelayer = zombie.GetComponent<SwingRelayer>();
+        if (damageType == DamageType.ZombieBlunt || damageType == DamageType.ZombieBite)
+        {
+            zombie = transform.GetComponentInParent<ZombieController>().gameObject;
+            if (zombie != null)
+            {
+                swingRelayer = zombie.GetComponentInChildren<SwingRelayer>();
+            }
+        }
     }
 
     // This method is called via Animation Event at the start of the swing animation
     public void BeginAttack()
     {
-        Debug.Log("DamageProducer.BeginAttack");
+        // Debug.Log("DamageProducer.BeginAttack");
         canDealDamage = true; // Enable damage
     }
 
     // This method is called via Animation Event at the end of the swing animation
     public void EndAttack()
     {
-        Debug.Log("DamageProducer.EndAttack");
+        // Debug.Log("DamageProducer.EndAttack");
         canDealDamage = false; // Disable damage for the rest of the swing
     }
 
@@ -66,14 +72,12 @@ public class DamageProducer : MonoBehaviour
         
         if (canDealDamage)
         {
-            Debug.Log("Can deal damage");
+            float damage = CalculateDamage();
+            Vector3 forceDirection = (other.transform.position - transform.position).normalized * forceMagnitude;
+
             if ((damageType == DamageType.WeaponBlunt || damageType == DamageType.WeaponEdged) && other.CompareTag("ZombieBodyPart"))
             {
-                Debug.Log("Player hit zombie body part: " + other.name);
-                float damage = CalculateDamage();
-                Vector3 forceDirection = (other.transform.position - transform.position).normalized * forceMagnitude;
                 string bodyPartName = other.gameObject.name;
-
                 ZombieBodyManager bodyManager = other.GetComponentInParent<ZombieBodyManager>();
                 if (bodyManager != null)
                 {
@@ -85,11 +89,14 @@ public class DamageProducer : MonoBehaviour
             if ((damageType == DamageType.ZombieBlunt || damageType == DamageType.ZombieBite) && other.CompareTag("Player")) 
             {
 
-                float damage = CalculateDamage();
-                Vector3 forceDirection = (other.transform.position - transform.position).normalized * forceMagnitude;
                 other.transform.root.GetComponent<FirstPersonController>().TakeDamage(damage, forceDirection);
                 canDealDamage = false; // Optionally reset here to ensure only the first hit is registered
                 swingRelayer.RelayEndAttack();
+            }
+
+            if(other.CompareTag("BuildingPart"))
+            {
+                other.GetComponent<BuildingPart>().TakeDamage(damage);
             }
 
 

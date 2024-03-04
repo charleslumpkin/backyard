@@ -20,6 +20,8 @@ public class BuildingPart : MonoBehaviour
     public List<BuildingPartData> supportingBuildingParts = new List<BuildingPartData>();
     public bool changed = true;
     private bool destroyToggled = false;
+    public float maxHealth = 100f;
+    public float currentHealth = 100f;  
 
     public (int x, int y, int z) localPosition = (0, 0, 0);
 
@@ -34,6 +36,28 @@ public class BuildingPart : MonoBehaviour
         guo.updatePhysics = true;
         AstarPath.active.UpdateGraphs(guo);
     }
+
+    public void TakeDamage(float damage)
+    {
+        currentHealth -= damage;
+        if (currentHealth <= 0)
+        {
+            destroyBuildingPart();
+        }
+    }
+
+    void OnTriggerEnter(Collider other)
+    {
+        Debug.Log("OnTriggerEnter: " + other.gameObject.tag);
+        if (other.gameObject.tag == "Zombie")
+        {
+            Debug.Log("Zombie");
+            other.gameObject.GetComponent<AIPath>().canMove = false;
+            other.gameObject.GetComponent<AIDestinationSetter>().target = transform;
+            other.gameObject.GetComponent<AIPath>().canMove = true;
+        }
+    }
+
 
     public void calcTotalSupportedMass()
     {
@@ -259,7 +283,10 @@ public class BuildingPart : MonoBehaviour
                 }
             }
             transform.parent.gameObject.GetComponent<BuildingGroup>().RemoveBuildingPartFromMatrix((transform.parent.gameObject.GetComponent<BuildingGroup>().translateCoordinateWithOffset(localPosition)));
-            gameObject.AddComponent<Rigidbody>();
+            Rigidbody rigidbody = GetComponent<Rigidbody>();
+            rigidbody.isKinematic = false;
+            rigidbody.useGravity = true;
+
             Destroy(gameObject, 3f); // Destroy the parent GameObject after 3 seconds
             destroyToggled = true;
         }
@@ -349,5 +376,11 @@ public class BuildingPart : MonoBehaviour
         }
 
         return returnBool;
+    }
+
+    void Awake()
+    {
+        currentHealth = maxHealth;
+
     }
 }
