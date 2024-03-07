@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using Pathfinding;
+using Unity.VisualScripting;
 
 public class BuildingPart : MonoBehaviour
 {
@@ -21,7 +22,8 @@ public class BuildingPart : MonoBehaviour
     public bool changed = true;
     private bool destroyToggled = false;
     public float maxHealth = 100f;
-    public float currentHealth = 100f;  
+    public float currentHealth = 100f;
+    public bool directlyDestroyed = false;
 
     public (int x, int y, int z) localPosition = (0, 0, 0);
 
@@ -39,9 +41,14 @@ public class BuildingPart : MonoBehaviour
 
     public void TakeDamage(float damage)
     {
+        Debug.Log("Current health: " + currentHealth);
+        Debug.Log("Damage: " + damage);
+
         currentHealth -= damage;
         if (currentHealth <= 0)
         {
+            Debug.Log("BuildingPart destroyed");
+            directlyDestroyed = true;
             destroyBuildingPart();
         }
     }
@@ -226,6 +233,7 @@ public class BuildingPart : MonoBehaviour
         {
             if (changed)
             {
+                Debug.Log("Changed: " + buildingPartID);
                 isTouchingGround = isTouchingGroundCheck();
                 isVerticalSupport = isVerticalSupportCheck();
                 isHorizontalSupport = !isVerticalSupport;
@@ -246,6 +254,9 @@ public class BuildingPart : MonoBehaviour
 
             if (isHorizontalSupport)
             {
+                if(supportingBuildingParts.Count == 0){
+                    destroyBuildingPart();
+                }
 
                 if (isOverloaded)
                 {
@@ -262,6 +273,8 @@ public class BuildingPart : MonoBehaviour
             // Debug.Log("Destroying building part: " + buildingPartID);
             if (isVerticalSupport)
             {
+
+
                 // Debug.Log("isVerticalSupport");
                 foreach (BuildingPartData supportedBuildingPart in supportedBuildingParts)
                 {
@@ -269,7 +282,12 @@ public class BuildingPart : MonoBehaviour
                     transform.parent.gameObject.GetComponent<BuildingGroup>().FindBuildingPartByID(supportedBuildingPart.buildingPartID).GetComponent<BuildingPart>().removeSupportingLoad(buildingPartID);
                     transform.parent.gameObject.GetComponent<BuildingGroup>().FindBuildingPartByID(supportedBuildingPart.buildingPartID).GetComponent<BuildingPart>().changed = true;
                     transform.parent.gameObject.GetComponent<BuildingGroup>().FindBuildingPartByID(supportedBuildingPart.buildingPartID).GetComponent<BuildingPart>().isOverloaded = true;
+                    
                 }
+
+                // in three seconds markt the column as changed
+                transform.parent.gameObject.GetComponent<BuildingGroup>().MarkColumnAsChanged(localPosition.x, localPosition.z);
+                
 
             }
             if (isHorizontalSupport)
@@ -287,7 +305,11 @@ public class BuildingPart : MonoBehaviour
             rigidbody.isKinematic = false;
             rigidbody.useGravity = true;
 
-            Destroy(gameObject, 3f); // Destroy the parent GameObject after 3 seconds
+            if(directlyDestroyed){
+                Destroy(gameObject, 0.1f); // Destroy the parent GameObject after 0.1 seconds
+            } else {
+                Destroy(gameObject, 8f); // Destroy the parent GameObject after 3 seconds
+            }
             destroyToggled = true;
         }
     }
@@ -362,20 +384,26 @@ public class BuildingPart : MonoBehaviour
         return returnBool;
     }
 
+    // public bool isVerticalSupportCheck()
+    // {
+    //     bool returnBool = false;
+
+    //     if (transform.parent.gameObject.GetComponent<BuildingGroup>().CheckSupport(localPosition) || isTouchingGround)
+    //     {
+    //         returnBool = true;
+    //     }
+    //     else
+    //     {
+    //         returnBool = false;
+    //     }
+
+    //     return returnBool;
+    // }
+
     public bool isVerticalSupportCheck()
     {
-        bool returnBool = false;
-
-        if (transform.parent.gameObject.GetComponent<BuildingGroup>().CheckSupport(localPosition) || isTouchingGround)
-        {
-            returnBool = true;
-        }
-        else
-        {
-            returnBool = false;
-        }
-
-        return returnBool;
+        // Check if there is a direct support to the ground from this part
+        return transform.parent.gameObject.GetComponent<BuildingGroup>().HasUninterruptedVerticalSupportToGround(localPosition);
     }
 
     void Awake()

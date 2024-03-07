@@ -112,15 +112,25 @@ public class AttackingState : ZombieState
 
 public class StuckState : ZombieState
 {
-    private const float checkInterval = 2f;
+    private const float checkInterval = 3f;
 
     public StuckState(ZombieController controller) : base(controller) { }
 
 
     public override void OnEnter()
     {
-        controller.TransitionState(new JumpingState(controller));
+        if (UnityEngine.Random.Range(0.0f, 1.0f) < 0.3f)
+        {
+            controller.TransitionState(new JumpingState(controller));
+            Debug.Log("Jumping");
+        }
+        else
+        {
+            controller.TransitionState(new AttackingState(controller));
+            Debug.Log("Attacking");
+        }
     }
+
 
     public override void Update()
     {
@@ -195,6 +205,8 @@ public class ZombieController : MonoBehaviour
         {
             return;
         }
+
+        Debug.Log("Current State: " + currentState);
         currentState.Update();
         CheckProximityToBuildingPart();
         CheckGroundedStatus();

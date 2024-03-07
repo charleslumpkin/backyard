@@ -69,31 +69,19 @@ public class BuildingManager : MonoBehaviour
 
     void OnDrawGizmos()
     {
-        //set gizmo color to purple 
-        // Gizmos.color = new Color(1f, 0f, 1f, 0.7f);
-
-        // Gizmos.DrawWireCube(hitTemp.point, new Vector3(1f, 1f, 1f));
-
     }
 
-
-    // Start is called before the first frame update
     void Start()
     {
         firstPersonController = GameObject.Find("PlayerCapsule").GetComponent<FirstPersonController>();
-        // Get the BuildingMaterials GameObject
         GameObject buildingParts = GameObject.Find("BuildingParts");
 
-        // Check if the BuildingMaterials GameObject exists
         if (buildingParts != null)
         {
-            // Check if the BuildingMaterials GameObject has any children
             if (buildingParts.transform.childCount > 0)
             {
-                // Get the first child of the BuildingMaterials GameObject
                 GameObject selectedPart = buildingParts.transform.GetChild(currentPart).gameObject;
 
-                // Set the currentBuildingPart variable to the first child of the BuildingMaterials GameObject
                 currentBuildingPart = selectedPart;
                 currentBuildingPart.SetActive(false);
             }

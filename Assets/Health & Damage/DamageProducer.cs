@@ -96,6 +96,7 @@ public class DamageProducer : MonoBehaviour
 
             if(other.CompareTag("BuildingPart"))
             {
+                Debug.Log("BuildingPart Hit");
                 other.GetComponent<BuildingPart>().TakeDamage(damage);
             }
 

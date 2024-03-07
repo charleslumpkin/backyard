@@ -192,9 +192,9 @@ public class BuildingGroup : MonoBehaviour
         buildingPart.GetComponent<BuildingPart>().localPosition = ((int)buildingPart.transform.localPosition.x, (int)buildingPart.transform.localPosition.y, (int)buildingPart.transform.localPosition.z);
         buildingPart.GetComponent<Renderer>().material.color = Color.white;
         buildingPart.GetComponent<BoxCollider>().enabled = true;
-        
+
         ExpandMatrixAndInsertPart(buildingPart.transform.localPosition, buildingPart);
- 
+
         AstarPath.active.Scan();
 
 
@@ -203,7 +203,7 @@ public class BuildingGroup : MonoBehaviour
 
     public void recalculateAIGraph()
     {
-        for(int x = 0; x < bpMatrix.GetLength(0); x++)
+        for (int x = 0; x < bpMatrix.GetLength(0); x++)
         {
             for (int y = 0; y < bpMatrix.GetLength(1); y++)
             {
@@ -217,7 +217,7 @@ public class BuildingGroup : MonoBehaviour
                 }
             }
         }
-     
+
     }
 
 
@@ -256,6 +256,55 @@ public class BuildingGroup : MonoBehaviour
         return result;
 
     }
+
+    //The new one
+    public bool HasUninterruptedVerticalSupportToGround((int x, int y, int z) startCoord)
+    {
+        int x = startCoord.x + bpOffsetX;
+        int y = startCoord.y + bpOffsetY;
+        int z = startCoord.z + bpOffsetZ;
+
+        // Check if the startCoord is already on the ground
+        if (startCoord.y == 0) return true;
+
+        // Iteratively check each part below the current one until reaching the ground
+        while (y > 0)
+        {
+            y--; // Move down one level
+            int partId = bpMatrix[x, y, z];
+            if (partId == 0) return false; // No support found, chain is interrupted
+
+            GameObject part = FindBuildingPartByID(partId);
+            if (part == null || !part.GetComponent<BuildingPart>().isVerticalSupport) return false; // Support chain interrupted
+
+            if (part.GetComponent<BuildingPart>().isTouchingGround) return true; // Support chain reaches the ground
+        }
+
+        return false; // In case the loop exits without reaching the ground (shouldn't happen with proper bounds checking)
+    }
+
+    public void MarkColumnAsChanged(int x, int z)
+    {
+
+        Debug.Log("MarkColumnAsChanged: " + x + " " + z);
+        for (int y = 0; y < bpMatrix.GetLength(1); y++) // Assuming y is the vertical dimension
+        {
+            Debug.Log("Marking: " + x + " " + y + " " + z); 
+            int partId = bpMatrix[x + bpOffsetX, y + bpOffsetY, z + bpOffsetZ];
+            Debug.Log("PartID: " + partId);
+            if (partId != 0) // There is a part at this position
+            {
+                Debug.Log("Not 0");
+                GameObject part = FindBuildingPartByID(partId);
+                if (part != null)
+                {
+                    Debug.Log("Part not null");
+                    part.GetComponent<BuildingPart>().changed = true;
+                }
+            }
+        }
+    }
+
 
     public void SetBuildingGroupID(int newBuildingGroupID)
     {
