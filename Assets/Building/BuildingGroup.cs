@@ -170,6 +170,9 @@ public class BuildingGroup : MonoBehaviour
 
     public void AddBuildingPart(GameObject newBuildingPart, Vector3 newBuildingPartCoordinate)
     {
+        //clear the console
+        System.Console.Clear();
+        
         int currentID = 0;
         GameObject characterCam = GameObject.Find("CharacterCam");
 
@@ -226,36 +229,6 @@ public class BuildingGroup : MonoBehaviour
         bpMatrix = new int[1, 1, 1];
     }
 
-    public bool CheckSupport((int x, int y, int z) bpCoord)
-    {
-        bool verbose = false;
-        bool result = false;
-        int[,,] matrix = bpMatrix;
-        (int x, int y, int z) translatedCoord = (bpCoord.x + bpOffsetX, bpCoord.y + bpOffsetY, bpCoord.z + bpOffsetZ);
-
-        if (verbose)
-        {
-            PrintMatrix("CheckSupport", matrix);
-        }
-
-        if (translatedCoord.y > 0)
-        {
-            if (matrix[translatedCoord.x, translatedCoord.y - 1, translatedCoord.z] != 0)
-            {
-                GameObject partBelow = FindBuildingPart((translatedCoord.x, translatedCoord.y - 1, translatedCoord.z));
-                if (partBelow != null)
-                {
-                    if (partBelow.GetComponent<BuildingPart>().isVerticalSupport || partBelow.GetComponent<BuildingPart>().isTouchingGround)
-                    {
-                        result = true;
-                    }
-                }
-            }
-        }
-
-        return result;
-
-    }
 
     //The new one
     public bool HasUninterruptedVerticalSupportToGround((int x, int y, int z) startCoord)
@@ -264,13 +237,12 @@ public class BuildingGroup : MonoBehaviour
         int y = startCoord.y + bpOffsetY;
         int z = startCoord.z + bpOffsetZ;
 
-        // Check if the startCoord is already on the ground
-        if (startCoord.y == 0) return true;
-
         // Iteratively check each part below the current one until reaching the ground
         while (y > 0)
         {
             y--; // Move down one level
+            
+            Debug.Log("Checking " + x + ", " + y + ", " + z);
             int partId = bpMatrix[x, y, z];
             if (partId == 0) return false; // No support found, chain is interrupted
 
@@ -283,23 +255,59 @@ public class BuildingGroup : MonoBehaviour
         return false; // In case the loop exits without reaching the ground (shouldn't happen with proper bounds checking)
     }
 
-    public void MarkColumnAsChanged(int x, int z)
+    public void MarkColumnAsChanged(int x, int yIn, int z)
     {
-
-        Debug.Log("MarkColumnAsChanged: " + x + " " + z);
         for (int y = 0; y < bpMatrix.GetLength(1); y++) // Assuming y is the vertical dimension
         {
-            Debug.Log("Marking: " + x + " " + y + " " + z); 
-            int partId = bpMatrix[x + bpOffsetX, y + bpOffsetY, z + bpOffsetZ];
-            Debug.Log("PartID: " + partId);
-            if (partId != 0) // There is a part at this position
+            if(IsWithinBounds((x + bpOffsetX, y + bpOffsetY, z + bpOffsetZ)))
             {
-                Debug.Log("Not 0");
-                GameObject part = FindBuildingPartByID(partId);
-                if (part != null)
+                int partId = bpMatrix[x + bpOffsetX, y + bpOffsetY, z + bpOffsetZ];
+                if (partId != 0) // There is a part at this position
                 {
-                    Debug.Log("Part not null");
-                    part.GetComponent<BuildingPart>().changed = true;
+                    GameObject part = FindBuildingPartByID(partId);
+                    if (part != null)
+                    {
+                        part.GetComponent<BuildingPart>().changed = true;
+                        part.GetComponent<BuildingPart>().isVerticalSupport = false;
+                    }
+                }
+            }
+
+        }
+    }
+
+    public void MarkNeighborsAsChanged(int x, int y, int z)
+    {
+        x += bpOffsetX;
+        y += bpOffsetY;
+        z += bpOffsetZ;
+        // Define the 6 direct neighbor positions relative to the input coordinate
+        (int, int, int)[] neighbors = new (int, int, int)[] {
+        (1, 0, 0), (-1, 0, 0), // X-axis neighbors
+        (0, 1, 0), (0, -1, 0), // Y-axis neighbors
+        (0, 0, 1), (0, 0, -1)  // Z-axis neighbors
+        };
+
+        // Iterate through each neighbor position
+        foreach (var (dx, dy, dz) in neighbors)
+        {   
+            int neighborX = x + dx;
+            int neighborY = y + dy;
+            int neighborZ = z + dz;
+
+            // Check if the neighbor is within bounds
+            if (IsWithinBounds((neighborX, neighborY, neighborZ)))
+            {
+                // Check if the neighbor is a horizontal support
+                int partId = bpMatrix[neighborX, neighborY, neighborZ];
+                if (partId != 0)
+                {
+                    GameObject part = FindBuildingPart((neighborX, neighborY, neighborZ));
+                    if (part != null && part.GetComponent<BuildingPart>().isHorizontalSupport)
+                    {
+                        // Mark the neighbor as changed
+                        part.GetComponent<BuildingPart>().changed = true;
+                    }
                 }
             }
         }

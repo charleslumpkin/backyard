@@ -41,13 +41,9 @@ public class BuildingPart : MonoBehaviour
 
     public void TakeDamage(float damage)
     {
-        Debug.Log("Current health: " + currentHealth);
-        Debug.Log("Damage: " + damage);
-
         currentHealth -= damage;
         if (currentHealth <= 0)
         {
-            Debug.Log("BuildingPart destroyed");
             directlyDestroyed = true;
             destroyBuildingPart();
         }
@@ -55,10 +51,8 @@ public class BuildingPart : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
-        Debug.Log("OnTriggerEnter: " + other.gameObject.tag);
         if (other.gameObject.tag == "Zombie")
         {
-            Debug.Log("Zombie");
             other.gameObject.GetComponent<AIPath>().canMove = false;
             other.gameObject.GetComponent<AIDestinationSetter>().target = transform;
             other.gameObject.GetComponent<AIPath>().canMove = true;
@@ -97,13 +91,10 @@ public class BuildingPart : MonoBehaviour
 
     public void removeSupportedLoad(int buildingPartID)
     {
-        // Debug.Log("removeSupportedLoad");
-        // Debug.Log("Removing " + buildingPartID + " from supportedBuildingParts." + this.buildingPartID);
         for (int i = 0; i < supportedBuildingParts.Count; i++)
         {
             if (supportedBuildingParts[i].buildingPartID == buildingPartID)
             {
-                // Debug.Log("FOUND MATCH at " + i);
                 supportedBuildingParts.RemoveAt(i);
             }
         }
@@ -138,13 +129,10 @@ public class BuildingPart : MonoBehaviour
 
     public void removeSupportingLoad(int buildingPartID)
     {
-        // Debug.Log("removeSupportingLoad");
-        // Debug.Log("Removing " + buildingPartID + " from supportingBuildingParts." + this.buildingPartID);
         for (int i = 0; i < supportingBuildingParts.Count; i++)
         {
             if (supportingBuildingParts[i].buildingPartID == buildingPartID)
             {
-                // Debug.Log("FOUND MATCH at " + i);
                 supportingBuildingParts.RemoveAt(i);
             }
         }
@@ -183,45 +171,25 @@ public class BuildingPart : MonoBehaviour
         }
     }
 
-    public void updateBidirectionalLoads()
+    public void AddHorizontalLoadToVerticalSupports()
     {
-        // Debug.Log("Updating bidirectional loads: " + buildingPartID);
-        if (isHorizontalSupport)
+
+        (int x, int y, int z) translatedLocalPosition = transform.parent.gameObject.GetComponent<BuildingGroup>().translateCoordinateWithOffset(localPosition);
+        Dictionary<int, int> verticalSupports = transform.parent.gameObject.GetComponent<BuildingGroup>().FindShortestPathsToVerticalSupports(translatedLocalPosition, supportDistance);
+
+        float dividedMass = mass / verticalSupports.Count;
+
+        foreach (KeyValuePair<int, int> entry in verticalSupports)
         {
-            // Debug.Log("isHorizontalSupport");
-            (int x, int y, int z) translatedLocalPosition = transform.parent.gameObject.GetComponent<BuildingGroup>().translateCoordinateWithOffset(localPosition);
-            Dictionary<int, int> verticalSupports = transform.parent.gameObject.GetComponent<BuildingGroup>().FindShortestPathsToVerticalSupports(translatedLocalPosition, supportDistance);
-
-            float dividedMass = mass / verticalSupports.Count;
-
-            foreach (KeyValuePair<int, int> entry in verticalSupports)
+            if (entry.Value <= supportDistance)
             {
-                if (entry.Value <= supportDistance)
-                {
-                    // Debug.Log("Adding or updating supported load to: " + entry.Key + " with distance: " + entry.Value + " and mass: " + dividedMass);
-                    transform.parent.gameObject.GetComponent<BuildingGroup>().FindBuildingPartByID(entry.Key).GetComponent<BuildingPart>().AddOrUpdateSupportedLoad(buildingPartID, entry.Value, dividedMass);
-                    transform.parent.gameObject.GetComponent<BuildingGroup>().FindBuildingPartByID(entry.Key).GetComponent<BuildingPart>().changed = true;
-                }
-            }
-
-        }
-
-        if (isVerticalSupport)
-        {
-            // Debug.Log("isVerticalSupport");
-            (int x, int y, int z) translatedLocalPosition = transform.parent.gameObject.GetComponent<BuildingGroup>().translateCoordinateWithOffset(localPosition);
-            Dictionary<int, int> horizontalSupports = transform.parent.gameObject.GetComponent<BuildingGroup>().FindShortestPathsToHorizontalSupports(translatedLocalPosition, supportDistance);
-
-            foreach (KeyValuePair<int, int> entry in horizontalSupports)
-            {
-                if (entry.Value <= supportDistance)
-                {
-                    // Debug.Log("Adding or updating supporting load to: " + entry.Key + " with distance: " + entry.Value + " and mass: " + mass);
-                    transform.parent.gameObject.GetComponent<BuildingGroup>().FindBuildingPartByID(entry.Key).GetComponent<BuildingPart>().AddOrUpdateSupportingLoad(buildingPartID, entry.Value, 0);
-
-                }
+                transform.parent.gameObject.GetComponent<BuildingGroup>().FindBuildingPartByID(entry.Key).GetComponent<BuildingPart>().AddOrUpdateSupportedLoad(buildingPartID, entry.Value, dividedMass);
+                transform.parent.gameObject.GetComponent<BuildingGroup>().FindBuildingPartByID(entry.Key).GetComponent<BuildingPart>().changed = true;
             }
         }
+
+
+
     }
 
 
@@ -229,88 +197,98 @@ public class BuildingPart : MonoBehaviour
 
     void Update()
     {
+
         if (buildingPartID != 0)
         {
             if (changed)
             {
-                Debug.Log("Changed: " + buildingPartID);
                 isTouchingGround = isTouchingGroundCheck();
                 isVerticalSupport = isVerticalSupportCheck();
-                isHorizontalSupport = !isVerticalSupport;
-                updateBidirectionalLoads();
+                isHorizontalSupport = isHorizontalSupportCheck();
+
+                if (!isVerticalSupport && !isHorizontalSupport)
+                {
+                    destroyBuildingPart();
+                }
+
+                if (isVerticalSupport)
+                {
+                    calcTotalSupportedMass();
+                    isOverloaded = isVerticalOverloadedCheck();
+                }
+
+                if (isHorizontalSupport)
+                {
+                    foreach (BuildingPartData supportingBuildingPart in supportingBuildingParts)
+                    {
+                        transform.parent.gameObject.GetComponent<BuildingGroup>().FindBuildingPartByID(supportingBuildingPart.buildingPartID).GetComponent<BuildingPart>().removeSupportedLoad(buildingPartID);
+                        removeSupportingLoad(supportingBuildingPart.buildingPartID);
+                        transform.parent.gameObject.GetComponent<BuildingGroup>().FindBuildingPartByID(supportingBuildingPart.buildingPartID).GetComponent<BuildingPart>().changed = true;
+                    }
+
+                    supportingBuildingParts.Clear();
+                    AddHorizontalLoadToVerticalSupports();
+                }
+
                 changed = false;
             }
 
-            if (isVerticalSupport)
+            if (isOverloaded)
             {
-                calcTotalSupportedMass();
-                isOverloaded = isVerticalOverloadedCheck();
-
-                if (isOverloaded)
-                {
-                    destroyBuildingPart();
-                }
-            }
-
-            if (isHorizontalSupport)
-            {
-                if(supportingBuildingParts.Count == 0){
-                    destroyBuildingPart();
-                }
-
-                if (isOverloaded)
-                {
-                    destroyBuildingPart();
-                }
+                destroyBuildingPart();
             }
         }
     }
+
+
+
+
+
 
     public void destroyBuildingPart()
     {
         if (!destroyToggled)
         {
-            // Debug.Log("Destroying building part: " + buildingPartID);
             if (isVerticalSupport)
             {
-
-
-                // Debug.Log("isVerticalSupport");
+                transform.parent.gameObject.GetComponent<BuildingGroup>().MarkColumnAsChanged(localPosition.x, localPosition.y, localPosition.z);
                 foreach (BuildingPartData supportedBuildingPart in supportedBuildingParts)
                 {
-                    // Debug.Log("Removing supporting load from: " + supportedBuildingPart.buildingPartID);
                     transform.parent.gameObject.GetComponent<BuildingGroup>().FindBuildingPartByID(supportedBuildingPart.buildingPartID).GetComponent<BuildingPart>().removeSupportingLoad(buildingPartID);
-                    transform.parent.gameObject.GetComponent<BuildingGroup>().FindBuildingPartByID(supportedBuildingPart.buildingPartID).GetComponent<BuildingPart>().changed = true;
                     transform.parent.gameObject.GetComponent<BuildingGroup>().FindBuildingPartByID(supportedBuildingPart.buildingPartID).GetComponent<BuildingPart>().isOverloaded = true;
-                    
                 }
-
-                // in three seconds markt the column as changed
-                transform.parent.gameObject.GetComponent<BuildingGroup>().MarkColumnAsChanged(localPosition.x, localPosition.z);
-                
-
             }
             if (isHorizontalSupport)
             {
-                // Debug.Log("isHorizontalSupport");
                 foreach (BuildingPartData supportingBuildingPart in supportingBuildingParts)
                 {
-                    // Debug.Log("Removing supported load from: " + supportingBuildingPart.buildingPartID);
+
                     transform.parent.gameObject.GetComponent<BuildingGroup>().FindBuildingPartByID(supportingBuildingPart.buildingPartID).GetComponent<BuildingPart>().removeSupportedLoad(buildingPartID);
                     transform.parent.gameObject.GetComponent<BuildingGroup>().FindBuildingPartByID(supportingBuildingPart.buildingPartID).GetComponent<BuildingPart>().changed = true;
                 }
+
             }
+
+            if (!isVerticalSupport)
+            {
+                transform.parent.gameObject.GetComponent<BuildingGroup>().MarkNeighborsAsChanged(localPosition.x, localPosition.y, localPosition.z);
+            }
+
             transform.parent.gameObject.GetComponent<BuildingGroup>().RemoveBuildingPartFromMatrix((transform.parent.gameObject.GetComponent<BuildingGroup>().translateCoordinateWithOffset(localPosition)));
             Rigidbody rigidbody = GetComponent<Rigidbody>();
             rigidbody.isKinematic = false;
             rigidbody.useGravity = true;
 
-            if(directlyDestroyed){
+            if (directlyDestroyed)
+            {
                 Destroy(gameObject, 0.1f); // Destroy the parent GameObject after 0.1 seconds
-            } else {
+            }
+            else
+            {
                 Destroy(gameObject, 8f); // Destroy the parent GameObject after 3 seconds
             }
             destroyToggled = true;
+
         }
     }
 
@@ -350,8 +328,27 @@ public class BuildingPart : MonoBehaviour
     public bool isTouchingGroundCheck()
     {
         bool returnBool = false;
-        Vector3 center = new Vector3(transform.position.x, transform.position.y + transform.localScale.y / 2, transform.position.z);
-        Collider[] colliders = Physics.OverlapBox(center, transform.localScale / 2, Quaternion.identity, LayerMask.GetMask("Terrain"));
+        Vector3 newScale = transform.parent.localScale;
+
+        Vector3 center = new Vector3(transform.position.x, transform.position.y, transform.position.z);
+        Collider[] colliders = Physics.OverlapBox(center, newScale / 2, Quaternion.identity, LayerMask.GetMask("Terrain"));
+
+
+
+        //mimic the overlapbox above with debug.drawline
+        Debug.DrawLine(center + new Vector3(-newScale.x / 2, -newScale.y / 2, -newScale.z / 2), center + new Vector3(newScale.x / 2, -newScale.y / 2, -newScale.z / 2), Color.red, 100f);
+        Debug.DrawLine(center + new Vector3(-newScale.x / 2, -newScale.y / 2, -newScale.z / 2), center + new Vector3(-newScale.x / 2, -newScale.y / 2, newScale.z / 2), Color.red, 100f);
+        Debug.DrawLine(center + new Vector3(newScale.x / 2, -newScale.y / 2, newScale.z / 2), center + new Vector3(-newScale.x / 2, -newScale.y / 2, newScale.z / 2), Color.red, 100f);
+        Debug.DrawLine(center + new Vector3(newScale.x / 2, -newScale.y / 2, newScale.z / 2), center + new Vector3(newScale.x / 2, -newScale.y / 2, -newScale.z / 2), Color.red, 100f);
+        Debug.DrawLine(center + new Vector3(-newScale.x / 2, newScale.y / 2, -newScale.z / 2), center + new Vector3(newScale.x / 2, newScale.y / 2, -newScale.z / 2), Color.red, 100f);
+        Debug.DrawLine(center + new Vector3(-newScale.x / 2, newScale.y / 2, -newScale.z / 2), center + new Vector3(-newScale.x / 2, newScale.y / 2, newScale.z / 2), Color.red, 100f);
+        Debug.DrawLine(center + new Vector3(newScale.x / 2, newScale.y / 2, newScale.z / 2), center + new Vector3(-newScale.x / 2, newScale.y / 2, newScale.z / 2), Color.red, 100f);
+        Debug.DrawLine(center + new Vector3(newScale.x / 2, newScale.y / 2, newScale.z / 2), center + new Vector3(newScale.x / 2, newScale.y / 2, -newScale.z / 2), Color.red, 100f);
+
+
+
+
+        Debug.Log("isTouchingGroundCheck: " + colliders.Length);
 
         if (colliders.Length > 0)
         {
@@ -367,43 +364,53 @@ public class BuildingPart : MonoBehaviour
 
     public bool isVerticalOverloadedCheck()
     {
-        bool returnBool = false;
-
-        if (isVerticalSupport)
+        if (totalSupportedMass > maxSupporatbleMass)
         {
-            if (totalSupportedMass > maxSupporatbleMass)
-            {
-                returnBool = true;
-            }
-            else
-            {
-                returnBool = false;
-            }
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+
+    public bool isVerticalSupportCheck()
+    {
+        bool returnBool = false;
+        if (isTouchingGround)
+        {
+            returnBool = true;
+        }
+        else
+        {
+            bool test = transform.parent.gameObject.GetComponent<BuildingGroup>().HasUninterruptedVerticalSupportToGround(localPosition);
+            Debug.Log("isVerticalSupportCheck: " + test);
+            returnBool = transform.parent.gameObject.GetComponent<BuildingGroup>().HasUninterruptedVerticalSupportToGround(localPosition);
         }
 
         return returnBool;
     }
 
-    // public bool isVerticalSupportCheck()
-    // {
-    //     bool returnBool = false;
-
-    //     if (transform.parent.gameObject.GetComponent<BuildingGroup>().CheckSupport(localPosition) || isTouchingGround)
-    //     {
-    //         returnBool = true;
-    //     }
-    //     else
-    //     {
-    //         returnBool = false;
-    //     }
-
-    //     return returnBool;
-    // }
-
-    public bool isVerticalSupportCheck()
+    public bool isHorizontalSupportCheck()
     {
-        // Check if there is a direct support to the ground from this part
-        return transform.parent.gameObject.GetComponent<BuildingGroup>().HasUninterruptedVerticalSupportToGround(localPosition);
+        if (isVerticalSupport)
+        {
+            return false;
+        }
+        else
+        {
+            Dictionary<int, int> verticalSupports = transform.parent.gameObject.GetComponent<BuildingGroup>().FindShortestPathsToVerticalSupports(transform.parent.gameObject.GetComponent<BuildingGroup>().translateCoordinateWithOffset(localPosition), supportDistance);
+
+            if (verticalSupports.Count > 0)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
     }
 
     void Awake()
