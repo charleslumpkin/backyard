@@ -19,6 +19,9 @@ public class BuildingPart : MonoBehaviour
     public bool isOverloaded = false;
     public List<BuildingPartData> supportedBuildingParts = new List<BuildingPartData>();
     public List<BuildingPartData> supportingBuildingParts = new List<BuildingPartData>();
+
+    public List<int> supports = new List<int>();
+    public List<int> supportedBy = new List<int>();
     public bool changed = true;
     private bool destroyToggled = false;
     public float maxHealth = 100f;
