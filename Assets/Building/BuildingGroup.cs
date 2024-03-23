@@ -3,176 +3,282 @@ using UnityEngine;
 using Pathfinding;
 using Unity.VisualScripting;
 using UnityEngine.UIElements;
+using System.Collections;
+using System.Linq;
 
 
 [System.Serializable]
-public class BuildingPartData
+public class BuildingPartReference
 {
-    public int buildingPartID;
-    public int distance;
-    public float mass;
+    public int ID;
+    public BuildingPart Part;
 
-    public BuildingPartData(int id, int dist, float m)
+    public BuildingPartReference(int id, BuildingPart part)
     {
-        buildingPartID = id;
-        distance = dist;
-        mass = m;
+        ID = id;
+        Part = part;
     }
 }
 
+[System.Serializable]
+public class Neighbors
+{
+    public BuildingPart up;
+    public BuildingPart down;
+    public BuildingPart left;
+    public BuildingPart right;
+    public BuildingPart forward;
+    public BuildingPart backward;
+}
+
+public class PathResult
+{
+    public BuildingPart StartNode { get; set; }
+    public BuildingPart EndNode { get; set; }
+    public int PathLength { get; set; }
+    public List<BuildingPart> Path { get; set; }
+}
+
+public enum GoalType
+{
+    Grounded,
+    VerticalSupport,
+    SpecificNode
+}
+
+
+// Custom node class for UCS
+public class UCSNode
+{
+    public BuildingPart Part;
+    public int Cost;
+    public UCSNode Parent;
+
+    public UCSNode(BuildingPart part, int cost, UCSNode parent)
+    {
+        Part = part;
+        Cost = cost;
+        Parent = parent;
+    }
+}
 
 public class BuildingGroup : MonoBehaviour
 {
     public int buildingGroupID;
     public int[,,] bpMatrix;
-    public Vector3 offset;
-    public int bpMatrixLowerBoundX = 0;
-    public int bpMatrixLowerBoundY = 0;
-    public int bpMatrixLowerBoundZ = 0;
-    public int bpMatrixUpperBoundX = 0;
-    public int bpMatrixUpperBoundY = 0;
-    public int bpMatrixUpperBoundZ = 0;
-    public int bpOffsetX = 0;
-    public int bpOffsetY = 0;
-    public int bpOffsetZ = 0;
+    public Vector3Int offset;
+    public Vector3Int bpUpperBound;
+    public Vector3Int bpLowerBound;
+    public bool massPropagated = false;
+    public PathResult currentPathResult;
 
-    public void RemoveBuildingPartFromMatrix((int x, int y, int z) bpCoord)
+
+    public Dictionary<int, BuildingPart> buildingPartById = new Dictionary<int, BuildingPart>();
+
+
+
+
+
+
+
+    void Update()
+    {
+        if (AllSupportCalculationsFinished() && !massPropagated)
+        {
+            Debug.Log("All support calculations finished. Propagating mass...");
+            PropagateMassFromGroundNodes();
+            massPropagated = true;
+            checkOverloaded();
+        }
+    }
+
+    private bool AllSupportCalculationsFinished()
+    {
+        return buildingPartById.Values.All(bp => !bp.changed);
+    }
+
+    private void PropagateMassFromGroundNodes()
+    {
+        var groundNodes = buildingPartById.Values.Where(bp => bp.isGrounded).ToList();
+        foreach (var groundNode in groundNodes)
+        {
+            Debug.Log($"Propagating mass from ground node {groundNode.ID}");
+            DFSPropagateMass(groundNode);
+        }
+    }
+
+    private void DFSPropagateMass(BuildingPart node)
+    {
+
+        
+        if (node == null) return;
+
+        // Start from the leaf nodes
+        var children = buildingPartById.Values.Where(bp => bp.supportedBy == node).ToList();
+        foreach (var child in children)
+        {
+            DFSPropagateMass(child);
+        }
+
+        // Once all children have calculated their total mass, sum it up for the current node
+        node.totalSupportedMass = node.mass + children.Sum(child => child.totalSupportedMass);
+    }
+
+    public void checkOverloaded()
+    {
+        foreach (var bp in buildingPartById.Values)
+        {
+            // Check if the building part is overloaded and is a vertical support
+            if (bp.isVerticalSupport && bp.IsOverloaded())
+            {
+                SetOverloadedFlag(bp);
+            }
+        }
+    }
+
+    private void SetOverloadedFlag(BuildingPart startNode)
+    {
+        // Use a DFS approach to set the overloaded flag for all supported parts
+        var stack = new Stack<BuildingPart>();
+        stack.Push(startNode);
+
+        while (stack.Count > 0)
+        {
+            var current = stack.Pop();
+            // Set the overloaded flag for the current part
+            current.isOverloaded = true;
+
+            // Get all parts that are directly supported by the current part
+            var supportedParts = buildingPartById.Values.Where(bp => bp.supportedBy == current && !bp.isVerticalSupport).ToList();
+
+            foreach (var part in supportedParts)
+            {
+                stack.Push(part);
+            }
+        }
+    }
+
+
+
+
+    public void RegisterBuildingPart(int id, BuildingPart bp)
+    {
+
+        if (!buildingPartById.ContainsKey(id))
+        {
+            buildingPartById.Add(id, bp);
+        }
+        else
+        {
+            Debug.LogWarning($"BuildingPart with ID {id} already registered!");
+        }
+
+    }
+
+    public BuildingPart GetBuildingPartById(int id)
+    {
+        if (buildingPartById.TryGetValue(id, out BuildingPart bp))
+        {
+            return bp;
+        }
+        else
+        {
+            if (id != 0) Debug.LogWarning($"BuildingPart with ID {id} not found.");
+            return null;
+        }
+    }
+
+    public void DeregisterBuildingPart(int id)
+    {
+        if (buildingPartById.ContainsKey(id))
+        {
+            buildingPartById.Remove(id);
+        }
+        else
+        {
+            Debug.LogWarning($"Trying to deregister BuildingPart with ID {id}, but it's not registered.");
+        }
+    }
+
+    public Neighbors GetNeighbors(BuildingPart bp)
+    {
+        Neighbors neighbors = new Neighbors();
+        Vector3Int bpPos = bp.localPosition;
+
+        Vector3Int up = bp.localPosition + offset + Vector3Int.up;
+        Vector3Int down = bp.localPosition + offset + Vector3Int.down;
+        Vector3Int left = bp.localPosition + offset + Vector3Int.left;
+        Vector3Int right = bp.localPosition + offset + Vector3Int.right;
+        Vector3Int forward = bp.localPosition + offset + Vector3Int.forward;
+        Vector3Int backward = bp.localPosition + offset + Vector3Int.back;
+
+        if (IsWithinBounds(up))
+        {
+            neighbors.up = GetBuildingPartById(bpMatrix[up.x, up.y, up.z]);
+        }
+        if (IsWithinBounds(down))
+        {
+            neighbors.down = GetBuildingPartById(bpMatrix[down.x, down.y, down.z]);
+        }
+        if (IsWithinBounds(left))
+        {
+            neighbors.left = GetBuildingPartById(bpMatrix[left.x, left.y, left.z]);
+        }
+        if (IsWithinBounds(right))
+        {
+            neighbors.right = GetBuildingPartById(bpMatrix[right.x, right.y, right.z]);
+        }
+        if (IsWithinBounds(forward))
+        {
+            neighbors.forward = GetBuildingPartById(bpMatrix[forward.x, forward.y, forward.z]);
+        }
+        if (IsWithinBounds(backward))
+        {
+            neighbors.backward = GetBuildingPartById(bpMatrix[backward.x, backward.y, backward.z]);
+        }
+
+        return neighbors;
+    }
+
+    public void RemoveBuildingPartFromMatrix(int id)
+    {
+        BuildingPart bp = GetBuildingPartById(id);
+        Vector3Int bpPos = bp.localPosition + offset;
+
+        bpMatrix[bpPos.x, bpPos.y, bpPos.z] = 0;
+        DeregisterBuildingPart(id);
+    }
+
+    public void AddBuildingPartToMatrix(int id, Vector3Int bpPos)
+    {
+        Vector3Int bpOffset = bpPos + offset;
+        bpMatrix[bpOffset.x, bpOffset.y, bpOffset.z] = id;
+        RegisterBuildingPart(id, GetBuildingPartById(id));
+    }
+
+
+    void Awake()
+    {
+        bpMatrix = new int[1, 1, 1];
+    }
+
+    public void RemoveBuildingPartFromMatrix(Vector3Int bpCoord)
     {
         if (bpCoord.x >= 0 && bpCoord.x < bpMatrix.GetLength(0) && bpCoord.y >= 0 && bpCoord.y < bpMatrix.GetLength(1) && bpCoord.z >= 0 && bpCoord.z < bpMatrix.GetLength(2))
             bpMatrix[bpCoord.x, bpCoord.y, bpCoord.z] = 0;
     }
 
-
-    public Dictionary<int, int> FindShortestPathsToVerticalSupports((int x, int y, int z) start, int maxDistance)
-    {
-        Dictionary<int, int> verticalSupportsDistances = new Dictionary<int, int>();
-        Queue<((int x, int y, int z) position, int distance)> queue = new Queue<((int, int, int), int)>();
-        HashSet<(int, int, int)> visited = new HashSet<(int, int, int)>();
-
-        queue.Enqueue((start, 0)); // Start with the initial position and a distance of 0
-
-        while (queue.Count > 0)
-        {
-            var (current, distance) = queue.Dequeue();
-
-            if (distance > maxDistance || visited.Contains(current))
-            {
-                continue;
-            }
-
-            visited.Add(current); // Mark as visited
-            int partId = bpMatrix[current.x, current.y, current.z];
-
-            if (partId != 0)
-            {
-                BuildingPart part = FindBuildingPart((current.x, current.y, current.z)).GetComponent<BuildingPart>();
-                if (part.isVerticalSupport)
-                {
-
-                    if (!verticalSupportsDistances.ContainsKey(partId) && distance != 0) // Exclude the starting point if it's a vertical support
-                    {
-                        verticalSupportsDistances[partId] = distance;
-                    }
-                    continue; // Stop expanding from this point as it's a vertical support
-                }
-            }
-
-            foreach (var dir in new (int, int, int)[] { (1, 0, 0), (-1, 0, 0), (0, 1, 0), (0, -1, 0), (0, 0, 1), (0, 0, -1) })
-            {
-                (int x, int y, int z) next = (current.x + dir.Item1, current.y + dir.Item2, current.z + dir.Item3);
-                if (IsWithinBounds(next) && !visited.Contains(next) && bpMatrix[next.x, next.y, next.z] != 0)
-                {
-                    queue.Enqueue((next, distance + 1));
-
-                }
-            }
-        }
-
-        return verticalSupportsDistances;
-    }
-
-
-    public Dictionary<int, int> FindShortestPathsToHorizontalSupports((int x, int y, int z) start, int maxDistance)
-    {
-        Dictionary<int, int> horizontalSupportsDistances = new Dictionary<int, int>();
-        Queue<((int x, int y, int z) position, int distance)> queue = new Queue<((int, int, int), int)>();
-        HashSet<(int, int, int)> visited = new HashSet<(int, int, int)>();
-
-        queue.Enqueue((start, 0)); // Start with the initial position and a distance of 0
-
-        while (queue.Count > 0)
-        {
-            var (current, distance) = queue.Dequeue();
-
-            if (distance > maxDistance || visited.Contains(current))
-            {
-                continue;
-            }
-
-            visited.Add(current); // Mark as visited
-            int partId = bpMatrix[current.x, current.y, current.z];
-
-            if (partId != 0)
-            {
-                BuildingPart part = FindBuildingPart((current.x, current.y, current.z)).GetComponent<BuildingPart>();
-                if (part.isHorizontalSupport)
-                {
-                    if (!horizontalSupportsDistances.ContainsKey(partId) && distance != 0)
-                    {
-                        horizontalSupportsDistances[partId] = distance;
-                    }
-                    // continue; // Stop expanding from this point as it's a horizontal support
-                }
-            }
-
-            foreach (var dir in new (int, int, int)[] { (1, 0, 0), (-1, 0, 0), (0, 1, 0), (0, -1, 0), (0, 0, 1), (0, 0, -1) })
-            {
-                (int x, int y, int z) next = (current.x + dir.Item1, current.y + dir.Item2, current.z + dir.Item3);
-                if (IsWithinBounds(next) && !visited.Contains(next) && bpMatrix[next.x, next.y, next.z] != 0 && FindBuildingPart((next.x, next.y, next.z)).GetComponent<BuildingPart>().isHorizontalSupport)
-                {
-                    queue.Enqueue((next, distance + 1));
-                }
-            }
-        }
-
-        return horizontalSupportsDistances;
-    }
-
-
-    public bool IsWithinBounds((int x, int y, int z) position)
+    public bool IsWithinBounds(Vector3Int position)
     {
         return position.x >= 0 && position.x < bpMatrix.GetLength(0) &&
                position.y >= 0 && position.y < bpMatrix.GetLength(1) &&
                position.z >= 0 && position.z < bpMatrix.GetLength(2);
     }
 
-    public GameObject FindBuildingPart((int x, int y, int z) bpCoord)
-    {
-        GameObject result = null;
-        int[,,] matrix = bpMatrix;
-
-        if (bpCoord.x >= 0 && bpCoord.x < matrix.GetLength(0) && bpCoord.y >= 0 && bpCoord.y < matrix.GetLength(1) && bpCoord.z >= 0 && bpCoord.z < matrix.GetLength(2))
-        {
-            int buildingPartID = matrix[bpCoord.x, bpCoord.y, bpCoord.z];
-            if (buildingPartID != 0)
-            {
-                result = transform.Find("BP-" + buildingPartID).gameObject;
-            }
-        }
-
-        return result;
-    }
-
-    public GameObject FindBuildingPartByID(int buildingPartID)
-    {
-        return transform.Find("BP-" + buildingPartID).gameObject;
-    }
-
     public void AddBuildingPart(GameObject newBuildingPart, Vector3 newBuildingPartCoordinate)
     {
-        //clear the console
-        System.Console.Clear();
-        
+
+
         int currentID = 0;
         GameObject characterCam = GameObject.Find("CharacterCam");
 
@@ -191,20 +297,24 @@ public class BuildingGroup : MonoBehaviour
         buildingPart.transform.name = "BP-" + currentID;
         buildingPart.layer = LayerMask.NameToLayer("BuildingPart");
         buildingPart.transform.tag = "BuildingPart";
-        buildingPart.GetComponent<BuildingPart>().SetBuildingPartID(currentID);
-        buildingPart.GetComponent<BuildingPart>().localPosition = ((int)buildingPart.transform.localPosition.x, (int)buildingPart.transform.localPosition.y, (int)buildingPart.transform.localPosition.z);
+        BuildingPart bp = buildingPart.GetComponent<BuildingPart>();
+        bp.ID = currentID;
+        bp.bg = this;
+        bp.localPosition = new Vector3Int((int)buildingPart.transform.localPosition.x, (int)buildingPart.transform.localPosition.y, (int)buildingPart.transform.localPosition.z);
+
+        Debug.Log("============ AddBuildingPart: " + bp.ID + " ============\n");
         buildingPart.GetComponent<Renderer>().material.color = Color.white;
         buildingPart.GetComponent<BoxCollider>().enabled = true;
 
-        ExpandMatrixAndInsertPart(buildingPart.transform.localPosition, buildingPart);
+        RegisterBuildingPart(currentID, bp);
 
+        ExpandMatrixAndInsertPart(bp.localPosition, buildingPart);
         AstarPath.active.Scan();
-
-
+        massPropagated = false;
     }
 
 
-    public void recalculateAIGraph()
+    public void RecalculateAIGraph()
     {
         for (int x = 0; x < bpMatrix.GetLength(0); x++)
         {
@@ -214,99 +324,8 @@ public class BuildingGroup : MonoBehaviour
                 {
                     if (bpMatrix[x, y, z] != 0)
                     {
-                        GameObject part = FindBuildingPart((x, y, z));
-                        part.GetComponent<BuildingPart>().recalculateAIGraph();
-                    }
-                }
-            }
-        }
-
-    }
-
-
-    void Awake()
-    {
-        bpMatrix = new int[1, 1, 1];
-    }
-
-
-    //The new one
-    public bool HasUninterruptedVerticalSupportToGround((int x, int y, int z) startCoord)
-    {
-        int x = startCoord.x + bpOffsetX;
-        int y = startCoord.y + bpOffsetY;
-        int z = startCoord.z + bpOffsetZ;
-
-        // Iteratively check each part below the current one until reaching the ground
-        while (y > 0)
-        {
-            y--; // Move down one level
-            
-            Debug.Log("Checking " + x + ", " + y + ", " + z);
-            int partId = bpMatrix[x, y, z];
-            if (partId == 0) return false; // No support found, chain is interrupted
-
-            GameObject part = FindBuildingPartByID(partId);
-            if (part == null || !part.GetComponent<BuildingPart>().isVerticalSupport) return false; // Support chain interrupted
-
-            if (part.GetComponent<BuildingPart>().isTouchingGround) return true; // Support chain reaches the ground
-        }
-
-        return false; // In case the loop exits without reaching the ground (shouldn't happen with proper bounds checking)
-    }
-
-    public void MarkColumnAsChanged(int x, int yIn, int z)
-    {
-        for (int y = 0; y < bpMatrix.GetLength(1); y++) // Assuming y is the vertical dimension
-        {
-            if(IsWithinBounds((x + bpOffsetX, y + bpOffsetY, z + bpOffsetZ)))
-            {
-                int partId = bpMatrix[x + bpOffsetX, y + bpOffsetY, z + bpOffsetZ];
-                if (partId != 0) // There is a part at this position
-                {
-                    GameObject part = FindBuildingPartByID(partId);
-                    if (part != null)
-                    {
-                        part.GetComponent<BuildingPart>().changed = true;
-                        part.GetComponent<BuildingPart>().isVerticalSupport = false;
-                    }
-                }
-            }
-
-        }
-    }
-
-    public void MarkNeighborsAsChanged(int x, int y, int z)
-    {
-        x += bpOffsetX;
-        y += bpOffsetY;
-        z += bpOffsetZ;
-        // Define the 6 direct neighbor positions relative to the input coordinate
-        (int, int, int)[] neighbors = new (int, int, int)[] {
-        (1, 0, 0), (-1, 0, 0), // X-axis neighbors
-        (0, 1, 0), (0, -1, 0), // Y-axis neighbors
-        (0, 0, 1), (0, 0, -1)  // Z-axis neighbors
-        };
-
-        // Iterate through each neighbor position
-        foreach (var (dx, dy, dz) in neighbors)
-        {   
-            int neighborX = x + dx;
-            int neighborY = y + dy;
-            int neighborZ = z + dz;
-
-            // Check if the neighbor is within bounds
-            if (IsWithinBounds((neighborX, neighborY, neighborZ)))
-            {
-                // Check if the neighbor is a horizontal support
-                int partId = bpMatrix[neighborX, neighborY, neighborZ];
-                if (partId != 0)
-                {
-                    GameObject part = FindBuildingPart((neighborX, neighborY, neighborZ));
-                    if (part != null && part.GetComponent<BuildingPart>().isHorizontalSupport)
-                    {
-                        // Mark the neighbor as changed
-                        part.GetComponent<BuildingPart>().changed = true;
+                        //GameObject part = FindBuildingPart((x, y, z));
+                        //part.GetComponent<BuildingPart>().recalculateAIGraph();
                     }
                 }
             }
@@ -319,22 +338,22 @@ public class BuildingGroup : MonoBehaviour
         buildingGroupID = newBuildingGroupID;
     }
 
-    public void ExpandMatrixAndInsertPart(Vector3 newBuildingPartArrayCoordinate, GameObject newBuildingPart)
+    public void ExpandMatrixAndInsertPart(Vector3Int newBuildingPartArrayCoordinate, GameObject newBuildingPart)
     {
         bool verbose = false;
 
         if (bpMatrix.GetLength(0) == 1 && bpMatrix.GetLength(1) == 1 && bpMatrix.GetLength(2) == 1 && newBuildingPartArrayCoordinate.x == 0 && newBuildingPartArrayCoordinate.y == 0 && newBuildingPartArrayCoordinate.z == 0)
         {
-            bpMatrix[0, 0, 0] = newBuildingPart.GetComponent<BuildingPart>().buildingPartID;
+            bpMatrix[0, 0, 0] = newBuildingPart.GetComponent<BuildingPart>().ID;
         }
         else
         {
-            int oldUpperBoundX = bpMatrixUpperBoundX;
-            int oldUpperBoundY = bpMatrixUpperBoundY;
-            int oldUpperBoundZ = bpMatrixUpperBoundZ;
-            int oldLowerBoundX = bpMatrixLowerBoundX;
-            int oldLowerBoundY = bpMatrixLowerBoundY;
-            int oldLowerBoundZ = bpMatrixLowerBoundZ;
+            int oldUpperBoundX = bpUpperBound.x;
+            int oldUpperBoundY = bpUpperBound.y;
+            int oldUpperBoundZ = bpUpperBound.z;
+            int oldLowerBoundX = bpLowerBound.x;
+            int oldLowerBoundY = bpLowerBound.y;
+            int oldLowerBoundZ = bpLowerBound.z;
 
             int copyIntoX = 0;
             int copyIntoY = 0;
@@ -343,42 +362,41 @@ public class BuildingGroup : MonoBehaviour
 
             if (newBuildingPartArrayCoordinate.x > oldUpperBoundX)
             {
-                bpMatrixUpperBoundX = (int)newBuildingPartArrayCoordinate.x;
+                bpUpperBound.x = newBuildingPartArrayCoordinate.x;
                 copyIntoX = 0;
             }
             if (newBuildingPartArrayCoordinate.x < oldLowerBoundX)
             {
-                bpMatrixLowerBoundX = (int)newBuildingPartArrayCoordinate.x;
-                copyIntoX = oldLowerBoundX - bpMatrixLowerBoundX;
+                bpLowerBound.x = newBuildingPartArrayCoordinate.x;
+                copyIntoX = oldLowerBoundX - bpLowerBound.x;
             }
             if (newBuildingPartArrayCoordinate.y > oldUpperBoundY)
             {
-                bpMatrixUpperBoundY = (int)newBuildingPartArrayCoordinate.y;
+                bpUpperBound.y = newBuildingPartArrayCoordinate.y;
                 copyIntoY = 0;
             }
             if (newBuildingPartArrayCoordinate.y < oldLowerBoundY)
             {
-                bpMatrixLowerBoundY = (int)newBuildingPartArrayCoordinate.y;
-                copyIntoY = oldLowerBoundY - bpMatrixLowerBoundY;
+                bpLowerBound.y = newBuildingPartArrayCoordinate.y;
+                copyIntoY = oldLowerBoundY - bpLowerBound.y;
             }
             if (newBuildingPartArrayCoordinate.z > oldUpperBoundZ)
             {
-                bpMatrixUpperBoundZ = (int)newBuildingPartArrayCoordinate.z;
+                bpUpperBound.z = newBuildingPartArrayCoordinate.z;
                 copyIntoZ = 0;
             }
             if (newBuildingPartArrayCoordinate.z < oldLowerBoundZ)
             {
-                bpMatrixLowerBoundZ = (int)newBuildingPartArrayCoordinate.z;
-                copyIntoZ = oldLowerBoundZ - bpMatrixLowerBoundZ;
+                bpLowerBound.z = newBuildingPartArrayCoordinate.z;
+                copyIntoZ = oldLowerBoundZ - bpLowerBound.z;
             }
 
-            bpOffsetX = -bpMatrixLowerBoundX;
-            bpOffsetY = -bpMatrixLowerBoundY;
-            bpOffsetZ = -bpMatrixLowerBoundZ;
+            offset = new Vector3Int(-bpLowerBound.x, -bpLowerBound.y, -bpLowerBound.z);
 
-            int sizeX = bpMatrixUpperBoundX - bpMatrixLowerBoundX + 1;
-            int sizeY = bpMatrixUpperBoundY - bpMatrixLowerBoundY + 1;
-            int sizeZ = bpMatrixUpperBoundZ - bpMatrixLowerBoundZ + 1;
+
+            int sizeX = bpUpperBound.x - bpLowerBound.x + 1;
+            int sizeY = bpUpperBound.y - bpLowerBound.y + 1;
+            int sizeZ = bpUpperBound.z - bpLowerBound.z + 1;
 
             int assigmentX = 0;
             int assigmentY = 0;
@@ -390,7 +408,7 @@ public class BuildingGroup : MonoBehaviour
             }
             else
             {
-                assigmentX = bpOffsetX + (int)newBuildingPartArrayCoordinate.x;
+                assigmentX = offset.x + newBuildingPartArrayCoordinate.x;
             }
 
             if (copyIntoY > 0)
@@ -400,7 +418,7 @@ public class BuildingGroup : MonoBehaviour
             }
             else
             {
-                assigmentY = bpOffsetY + (int)newBuildingPartArrayCoordinate.y;
+                assigmentY = offset.y + newBuildingPartArrayCoordinate.y;
             }
 
             if (copyIntoZ > 0)
@@ -410,7 +428,7 @@ public class BuildingGroup : MonoBehaviour
             }
             else
             {
-                assigmentZ = bpOffsetZ + (int)newBuildingPartArrayCoordinate.z;
+                assigmentZ = offset.z + newBuildingPartArrayCoordinate.z;
             }
 
             if (verbose)
@@ -430,15 +448,7 @@ public class BuildingGroup : MonoBehaviour
                 cOutput += "assigmentX: " + assigmentX + "\n";
                 cOutput += "assigmentY: " + assigmentY + "\n";
                 cOutput += "assigmentZ: " + assigmentZ + "\n";
-                cOutput += "bpOffsetX: " + bpOffsetX + "\n";
-                cOutput += "bpOffsetY: " + bpOffsetY + "\n";
-                cOutput += "bpOffsetZ: " + bpOffsetZ + "\n";
-                cOutput += "bpMatrixLowerBoundX: " + bpMatrixLowerBoundX + "\n";
-                cOutput += "bpMatrixLowerBoundY: " + bpMatrixLowerBoundY + "\n";
-                cOutput += "bpMatrixLowerBoundZ: " + bpMatrixLowerBoundZ + "\n";
-                cOutput += "bpMatrixUpperBoundX: " + bpMatrixUpperBoundX + "\n";
-                cOutput += "bpMatrixUpperBoundY: " + bpMatrixUpperBoundY + "\n";
-                cOutput += "bpMatrixUpperBoundZ: " + bpMatrixUpperBoundZ + "\n";
+                cOutput += "offset: " + offset + "\n";
                 cOutput += "sizeX: " + sizeX + "\n";
                 cOutput += "sizeY: " + sizeY + "\n";
                 cOutput += "sizeZ: " + sizeZ + "\n";
@@ -459,16 +469,12 @@ public class BuildingGroup : MonoBehaviour
                 }
             }
 
-            newBpMatrix[assigmentX, assigmentY, assigmentZ] = newBuildingPart.GetComponent<BuildingPart>().buildingPartID;
+            newBpMatrix[assigmentX, assigmentY, assigmentZ] = newBuildingPart.GetComponent<BuildingPart>().ID;
             bpMatrix = newBpMatrix;
 
         }
     }
 
-    public (int x, int y, int z) translateCoordinateWithOffset((int x, int y, int z) buildingPartCoordinate)
-    {
-        return (buildingPartCoordinate.x + bpOffsetX, buildingPartCoordinate.y + bpOffsetY, buildingPartCoordinate.z + bpOffsetZ);
-    }
 
     public void PrintMatrix(string header, int[,,] givenMatrix)
     {

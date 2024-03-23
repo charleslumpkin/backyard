@@ -4,31 +4,367 @@ using UnityEngine;
 using UnityEngine.UI;
 using Pathfinding;
 using Unity.VisualScripting;
+using Unity.Mathematics;
+using UnityEditor;
+using System.Linq;
+using Unity.PlasticSCM.Editor.WebApi;
+
+
 
 public class BuildingPart : MonoBehaviour
 {
-    public int buildingPartID = 0;
-    public bool enableGizmos = false;
-    public float mass = 10f;
-    public float totalSupportedMass = 0f;
-    public float maxSupporatbleMass = 80f;
-    public int supportDistance = 10;
-    public bool isTouchingGround = false;
-    public bool isVerticalSupport = false;
-    public bool isHorizontalSupport = false;
-    public bool isOverloaded = false;
-    public List<BuildingPartData> supportedBuildingParts = new List<BuildingPartData>();
-    public List<BuildingPartData> supportingBuildingParts = new List<BuildingPartData>();
-
-    public List<int> supports = new List<int>();
-    public List<int> supportedBy = new List<int>();
+    public int ID = 0;
+    public int shortestPathToGround = int.MaxValue;
+    public BuildingGroup bg;
     public bool changed = true;
-    private bool destroyToggled = false;
+    public bool isGrounded = false;
+    public bool isVerticalSupport = false;
+    public bool isOverloaded = false;
+    //public bool supportCalculationDone = false;
+
+    public BuildingPart supportedBy;
+    public Neighbors neighbors;
+
+
+    public Vector3Int localPosition = new Vector3Int(0, 0, 0);
+    public float mass = 10f;
     public float maxHealth = 100f;
     public float currentHealth = 100f;
+    public float totalSupportedMass = 0f;
+    public float maxSupporatbleMass = 80f;
     public bool directlyDestroyed = false;
+    public bool alreadyDestroyed = false;
 
-    public (int x, int y, int z) localPosition = (0, 0, 0);
+    public bool enableGizmos = true;
+
+    void Update()
+    {
+
+        if (ID != 0)
+        {
+            if (changed && !isOverloaded)
+            {
+                isGrounded = IsTouchingGround();
+                neighbors = GetNeighbors();
+                PathResult pr = FindShortestPath(this, GoalType.Grounded);
+                if (pr != null)
+                {
+                    SetSuportedBy(pr);
+                    ResetTotalSupportedMass();
+                    isVerticalSupport = IsVerticalSupport();
+                    MarkNeighborsChangedIfShorter();
+                    bg.currentPathResult = pr;
+                }
+                else
+                {
+                    isOverloaded = true;
+                    MarkNeighborsChanged();
+                }
+
+                changed = false;
+            }
+
+            if (isOverloaded && !alreadyDestroyed)
+            {
+                DestroyBuildingPart();
+                alreadyDestroyed = true;
+
+            }
+        }
+    }
+
+    public void ResetTotalSupportedMass()
+    {
+        totalSupportedMass = mass;
+    }
+
+
+    public void SetSuportedBy(PathResult pr)
+    {
+        if (pr != null)
+        {
+            shortestPathToGround = pr.PathLength;
+        }
+        else
+        {
+            shortestPathToGround = int.MaxValue;
+        }
+        if (pr.Path != null)
+        {
+            if (pr.Path.Count > 1)
+            {
+                supportedBy = pr.Path[1];
+            }
+        }
+        else
+        {
+            supportedBy = null;
+        }
+    }
+
+
+    public bool IsOverloaded()
+    {
+        if (totalSupportedMass > maxSupporatbleMass)
+        {
+            if (isVerticalSupport)
+            {
+                // Check if this vertical block supports any non-vertical blocks
+                var supportsNonVertical = bg.buildingPartById.Values.Any(bp => bp.supportedBy == this && !bp.isVerticalSupport);
+                return supportsNonVertical;
+            }
+            return true;
+        }
+
+        return false;
+    }
+
+    public void DestroyBuildingPart()
+    {
+        bg.RemoveBuildingPartFromMatrix(ID);
+        bg.massPropagated = false; 
+        GetComponent<Rigidbody>().isKinematic = false;
+        GetComponent<Rigidbody>().useGravity = true;
+        MarkNeighborsChanged();
+
+        
+        if (directlyDestroyed)
+        {
+            Destroy(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject, 10f);
+        }
+
+    }
+
+
+
+
+    public PathResult FindShortestPath(BuildingPart startNode, GoalType goalType, BuildingPart endNode = null)
+    {
+        List<UCSNode> frontier = new List<UCSNode>();
+        HashSet<BuildingPart> explored = new HashSet<BuildingPart>();
+
+        frontier.Add(new UCSNode(startNode, 0, null));
+
+        while (frontier.Count > 0)
+        {
+            frontier.Sort((a, b) => a.Cost.CompareTo(b.Cost));
+            UCSNode currentNode = frontier[0];
+            frontier.RemoveAt(0);
+
+            if (explored.Contains(currentNode.Part))
+                continue;
+
+            bool goalReached = false;
+            switch (goalType)
+            {
+                case GoalType.Grounded:
+                    if (currentNode.Part.isGrounded)
+                        goalReached = true;
+                    break;
+                case GoalType.VerticalSupport:
+                    if (currentNode.Part.isVerticalSupport)
+                        goalReached = true;
+                    break;
+                case GoalType.SpecificNode:
+                    if (currentNode.Part == endNode)
+                        goalReached = true;
+                    break;
+            }
+
+            if (goalReached)
+            {
+                List<BuildingPart> path = new List<BuildingPart>();
+                UCSNode pathNode = currentNode;
+                while (pathNode != null)
+                {
+                    path.Add(pathNode.Part);
+                    pathNode = pathNode.Parent;
+                }
+                path.Reverse(); // If you want the path from start to goal
+
+                return new PathResult
+                {
+                    StartNode = startNode,
+                    EndNode = currentNode.Part,
+                    PathLength = currentNode.Cost,
+                    Path = path
+                };
+            }
+
+            explored.Add(currentNode.Part);
+
+            foreach (var neighbor in currentNode.Part.GetNeighborList())
+            {
+                if (!explored.Contains(neighbor))
+                {
+                    int newCost = currentNode.Cost + 1;
+                    UCSNode newNode = new UCSNode(neighbor, newCost, currentNode);
+                    frontier.Add(newNode);
+                }
+            }
+        }
+
+        return null; // No path found
+    }
+
+
+    public void MarkNeighborsChangedIfShorter()
+    {
+        List<BuildingPart> neighbors = GetNeighborList();
+        foreach (var neighbor in neighbors)
+        {
+            if (shortestPathToGround + 1 < neighbor.shortestPathToGround)
+            {
+                neighbor.changed = true;
+            }
+            if(shortestPathToGround - 1 > neighbor.shortestPathToGround)
+            {
+                neighbor.changed = true;
+            }
+            if(shortestPathToGround == int.MaxValue)
+            {
+                neighbor.changed = true;
+            }
+            if(shortestPathToGround == neighbor.shortestPathToGround)
+            {
+                neighbor.changed = true;
+            }
+        }
+
+
+    }
+
+    public void MarkNeighborsChanged()
+    {
+        List<BuildingPart> neighbors = GetNeighborList();
+        foreach (var neighbor in neighbors)
+        {
+            neighbor.changed = true;
+        }
+    }
+
+    // Assuming a method that returns a list of neighboring BuildingPart objects
+    private List<BuildingPart> GetNeighborList()
+    {
+        //Grab Neighbors from GetNeighbors Method  and return them as a list
+        Neighbors neighbors = GetNeighbors();
+        List<BuildingPart> neighborList = new List<BuildingPart>();
+        if (neighbors.up != null)
+        {
+            neighborList.Add(neighbors.up);
+        }
+        if (neighbors.down != null)
+        {
+            neighborList.Add(neighbors.down);
+        }
+        if (neighbors.left != null)
+        {
+            neighborList.Add(neighbors.left);
+        }
+        if (neighbors.right != null)
+        {
+            neighborList.Add(neighbors.right);
+        }
+        if (neighbors.forward != null)
+        {
+            neighborList.Add(neighbors.forward);
+        }
+        if (neighbors.backward != null)
+        {
+            neighborList.Add(neighbors.backward);
+        }
+        return neighborList;
+
+    }
+
+
+    public Neighbors GetNeighbors()
+    {
+        return bg.GetNeighbors(this);
+    }
+
+    public bool IsVerticalSupport()
+    {
+        bool returnBool = false;
+        if (isGrounded)
+        {
+            returnBool = true;
+        }
+        else if (neighbors.down != null && neighbors.down.isVerticalSupport)
+        {
+            returnBool = true;
+        }
+
+
+        return returnBool;
+    }
+
+    public bool IsTouchingGround()
+    {
+        bool returnBool = false;
+        Vector3 newScale = transform.parent.localScale;
+
+        Vector3 center = new Vector3(transform.position.x, transform.position.y, transform.position.z);
+        Collider[] colliders = Physics.OverlapBox(center, newScale / 2, Quaternion.identity, LayerMask.GetMask("Terrain"));
+
+        if (colliders.Length > 0)
+        {
+            returnBool = true;
+        }
+        else
+        {
+            returnBool = false;
+        }
+        return returnBool;
+    }
+
+
+    void Awake()
+    {
+        currentHealth = maxHealth;
+        neighbors = new Neighbors();
+    }
+
+
+    void OnDrawGizmos()
+    {
+        Gizmos.color = Color.red;
+        Vector3 center = transform.position; // Assuming this is the center of the BuildingPart
+
+        // Prepare the text to be displayed
+        string displayText = $"sp: {shortestPathToGround}\nMass: {totalSupportedMass:F2}"; // F2 for displaying the number with 2 decimal places
+
+        // Configure the style of the text
+        GUIStyle style = new GUIStyle()
+        {
+            alignment = TextAnchor.MiddleCenter,
+            fontSize = 12,
+            normal = { textColor = Color.white }
+        };
+
+        // Determine the label position, adjust Y offset as needed to position the label above the part
+        Vector3 labelPosition = center;
+
+        // Draw the label using UnityEditor.Handles
+        UnityEditor.Handles.Label(labelPosition, displayText, style);
+    }
+
+    private void OnGUI()
+    {
+        float fps = 1f / Time.deltaTime;
+
+        GUIStyle style = new GUIStyle(GUI.skin.label);
+        style.alignment = TextAnchor.LowerRight;
+        style.fontSize = 20;
+        style.normal.textColor = Color.red;
+
+        GUI.Label(new Rect(Screen.width - 100, Screen.height - 30, 100, 30), $"FPS: {fps.ToString("0.00")}", style);
+    }
+
 
     public void recalculateAIGraph()
     {
@@ -48,7 +384,7 @@ public class BuildingPart : MonoBehaviour
         if (currentHealth <= 0)
         {
             directlyDestroyed = true;
-            destroyBuildingPart();
+            DestroyBuildingPart();
         }
     }
 
@@ -62,363 +398,4 @@ public class BuildingPart : MonoBehaviour
         }
     }
 
-
-    public void calcTotalSupportedMass()
-    {
-        totalSupportedMass = 0f;
-        for (int i = 0; i < supportedBuildingParts.Count; i++)
-        {
-            totalSupportedMass += supportedBuildingParts[i].mass;
-        }
-    }
-
-    public void addSupportedLoad(int buildingPartID, int distance, float supportedMass)
-    {
-        supportedBuildingParts.Add(new BuildingPartData(buildingPartID, distance, supportedMass));
-    }
-
-    public BuildingPartData findSupportedLoad(int buildingPartID)
-    {
-        BuildingPartData returnBuildingPart = new BuildingPartData(0, 0, 0);
-        for (int i = 0; i < supportedBuildingParts.Count; i++)
-        {
-            if (supportedBuildingParts[i].buildingPartID == buildingPartID)
-            {
-                returnBuildingPart = supportedBuildingParts[i];
-
-            }
-        }
-
-        return returnBuildingPart;
-    }
-
-    public void removeSupportedLoad(int buildingPartID)
-    {
-        for (int i = 0; i < supportedBuildingParts.Count; i++)
-        {
-            if (supportedBuildingParts[i].buildingPartID == buildingPartID)
-            {
-                supportedBuildingParts.RemoveAt(i);
-            }
-        }
-    }
-
-    public void updateSupportedLoad(int buildingPartID, int distance, float supportedMass)
-    {
-        BuildingPartData supportedBuildingPart = findSupportedLoad(buildingPartID);
-        supportedBuildingPart.distance = distance;
-        supportedBuildingPart.mass = supportedMass;
-
-    }
-
-    public void addSupportingLoad(int buildingPartID, int distance, float supportingMass)
-    {
-        supportingBuildingParts.Add(new BuildingPartData(buildingPartID, distance, supportingMass));
-    }
-
-    public BuildingPartData findSupportingLoad(int buildingPartID)
-    {
-        BuildingPartData returnBuildingPart = new BuildingPartData(0, 0, 0);
-        for (int i = 0; i < supportingBuildingParts.Count; i++)
-        {
-            if (supportingBuildingParts[i].buildingPartID == buildingPartID)
-            {
-                returnBuildingPart = supportingBuildingParts[i];
-            }
-        }
-
-        return returnBuildingPart;
-    }
-
-    public void removeSupportingLoad(int buildingPartID)
-    {
-        for (int i = 0; i < supportingBuildingParts.Count; i++)
-        {
-            if (supportingBuildingParts[i].buildingPartID == buildingPartID)
-            {
-                supportingBuildingParts.RemoveAt(i);
-            }
-        }
-    }
-
-    public void updateSupportingLoad(int buildingPartID, int distance, float supportingMass)
-    {
-        BuildingPartData supportingBuildingPart = findSupportingLoad(buildingPartID);
-        supportingBuildingPart.distance = distance;
-        supportingBuildingPart.mass = supportingMass;
-
-    }
-
-    public void AddOrUpdateSupportedLoad(int buildingPartID, int distance, float supportedMass)
-    {
-        if (findSupportedLoad(buildingPartID).buildingPartID != 0)
-        {
-            updateSupportedLoad(buildingPartID, distance, supportedMass);
-
-        }
-        else
-        {
-            addSupportedLoad(buildingPartID, distance, supportedMass);
-        }
-    }
-
-    public void AddOrUpdateSupportingLoad(int buildingPartID, int distance, float supportingMass)
-    {
-        if (findSupportingLoad(buildingPartID).buildingPartID != 0)
-        {
-            updateSupportingLoad(buildingPartID, distance, supportingMass);
-        }
-        else
-        {
-            addSupportingLoad(buildingPartID, distance, supportingMass);
-        }
-    }
-
-    public void AddHorizontalLoadToVerticalSupports()
-    {
-
-        (int x, int y, int z) translatedLocalPosition = transform.parent.gameObject.GetComponent<BuildingGroup>().translateCoordinateWithOffset(localPosition);
-        Dictionary<int, int> verticalSupports = transform.parent.gameObject.GetComponent<BuildingGroup>().FindShortestPathsToVerticalSupports(translatedLocalPosition, supportDistance);
-
-        float dividedMass = mass / verticalSupports.Count;
-
-        foreach (KeyValuePair<int, int> entry in verticalSupports)
-        {
-            if (entry.Value <= supportDistance)
-            {
-                transform.parent.gameObject.GetComponent<BuildingGroup>().FindBuildingPartByID(entry.Key).GetComponent<BuildingPart>().AddOrUpdateSupportedLoad(buildingPartID, entry.Value, dividedMass);
-                transform.parent.gameObject.GetComponent<BuildingGroup>().FindBuildingPartByID(entry.Key).GetComponent<BuildingPart>().changed = true;
-            }
-        }
-
-
-
-    }
-
-
-
-
-    void Update()
-    {
-
-        if (buildingPartID != 0)
-        {
-            if (changed)
-            {
-                isTouchingGround = isTouchingGroundCheck();
-                isVerticalSupport = isVerticalSupportCheck();
-                isHorizontalSupport = isHorizontalSupportCheck();
-
-                if (!isVerticalSupport && !isHorizontalSupport)
-                {
-                    destroyBuildingPart();
-                }
-
-                if (isVerticalSupport)
-                {
-                    calcTotalSupportedMass();
-                    isOverloaded = isVerticalOverloadedCheck();
-                }
-
-                if (isHorizontalSupport)
-                {
-                    foreach (BuildingPartData supportingBuildingPart in supportingBuildingParts)
-                    {
-                        transform.parent.gameObject.GetComponent<BuildingGroup>().FindBuildingPartByID(supportingBuildingPart.buildingPartID).GetComponent<BuildingPart>().removeSupportedLoad(buildingPartID);
-                        removeSupportingLoad(supportingBuildingPart.buildingPartID);
-                        transform.parent.gameObject.GetComponent<BuildingGroup>().FindBuildingPartByID(supportingBuildingPart.buildingPartID).GetComponent<BuildingPart>().changed = true;
-                    }
-
-                    supportingBuildingParts.Clear();
-                    AddHorizontalLoadToVerticalSupports();
-                }
-
-                changed = false;
-            }
-
-            if (isOverloaded)
-            {
-                destroyBuildingPart();
-            }
-        }
-    }
-
-
-
-
-
-
-    public void destroyBuildingPart()
-    {
-        if (!destroyToggled)
-        {
-            if (isVerticalSupport)
-            {
-                transform.parent.gameObject.GetComponent<BuildingGroup>().MarkColumnAsChanged(localPosition.x, localPosition.y, localPosition.z);
-                foreach (BuildingPartData supportedBuildingPart in supportedBuildingParts)
-                {
-                    transform.parent.gameObject.GetComponent<BuildingGroup>().FindBuildingPartByID(supportedBuildingPart.buildingPartID).GetComponent<BuildingPart>().removeSupportingLoad(buildingPartID);
-                    transform.parent.gameObject.GetComponent<BuildingGroup>().FindBuildingPartByID(supportedBuildingPart.buildingPartID).GetComponent<BuildingPart>().isOverloaded = true;
-                }
-            }
-            if (isHorizontalSupport)
-            {
-                foreach (BuildingPartData supportingBuildingPart in supportingBuildingParts)
-                {
-
-                    transform.parent.gameObject.GetComponent<BuildingGroup>().FindBuildingPartByID(supportingBuildingPart.buildingPartID).GetComponent<BuildingPart>().removeSupportedLoad(buildingPartID);
-                    transform.parent.gameObject.GetComponent<BuildingGroup>().FindBuildingPartByID(supportingBuildingPart.buildingPartID).GetComponent<BuildingPart>().changed = true;
-                }
-
-            }
-
-            if (!isVerticalSupport)
-            {
-                transform.parent.gameObject.GetComponent<BuildingGroup>().MarkNeighborsAsChanged(localPosition.x, localPosition.y, localPosition.z);
-            }
-
-            transform.parent.gameObject.GetComponent<BuildingGroup>().RemoveBuildingPartFromMatrix((transform.parent.gameObject.GetComponent<BuildingGroup>().translateCoordinateWithOffset(localPosition)));
-            Rigidbody rigidbody = GetComponent<Rigidbody>();
-            rigidbody.isKinematic = false;
-            rigidbody.useGravity = true;
-
-            if (directlyDestroyed)
-            {
-                Destroy(gameObject, 0.1f); // Destroy the parent GameObject after 0.1 seconds
-            }
-            else
-            {
-                Destroy(gameObject, 8f); // Destroy the parent GameObject after 3 seconds
-            }
-            destroyToggled = true;
-
-        }
-    }
-
-
-    public void SetBuildingPartID(int newBuildingPartID)
-    {
-        buildingPartID = newBuildingPartID;
-    }
-
-    public int GetBuildingPartID()
-    {
-        return buildingPartID;
-    }
-
-    void OnDrawGizmos()
-    {
-        if (enableGizmos)
-        {
-            Gizmos.color = Color.red;
-            Vector3 center = new Vector3(transform.position.x, transform.position.y + transform.localScale.y / 2, transform.position.z);
-            Gizmos.DrawWireCube(center, transform.localScale);
-        }
-    }
-
-    private void OnGUI()
-    {
-        float fps = 1f / Time.deltaTime;
-
-        GUIStyle style = new GUIStyle(GUI.skin.label);
-        style.alignment = TextAnchor.LowerRight;
-        style.fontSize = 20;
-        style.normal.textColor = Color.red;
-
-        GUI.Label(new Rect(Screen.width - 100, Screen.height - 30, 100, 30), $"FPS: {fps.ToString("0.00")}", style);
-    }
-
-    public bool isTouchingGroundCheck()
-    {
-        bool returnBool = false;
-        Vector3 newScale = transform.parent.localScale;
-
-        Vector3 center = new Vector3(transform.position.x, transform.position.y, transform.position.z);
-        Collider[] colliders = Physics.OverlapBox(center, newScale / 2, Quaternion.identity, LayerMask.GetMask("Terrain"));
-
-
-
-        //mimic the overlapbox above with debug.drawline
-        Debug.DrawLine(center + new Vector3(-newScale.x / 2, -newScale.y / 2, -newScale.z / 2), center + new Vector3(newScale.x / 2, -newScale.y / 2, -newScale.z / 2), Color.red, 100f);
-        Debug.DrawLine(center + new Vector3(-newScale.x / 2, -newScale.y / 2, -newScale.z / 2), center + new Vector3(-newScale.x / 2, -newScale.y / 2, newScale.z / 2), Color.red, 100f);
-        Debug.DrawLine(center + new Vector3(newScale.x / 2, -newScale.y / 2, newScale.z / 2), center + new Vector3(-newScale.x / 2, -newScale.y / 2, newScale.z / 2), Color.red, 100f);
-        Debug.DrawLine(center + new Vector3(newScale.x / 2, -newScale.y / 2, newScale.z / 2), center + new Vector3(newScale.x / 2, -newScale.y / 2, -newScale.z / 2), Color.red, 100f);
-        Debug.DrawLine(center + new Vector3(-newScale.x / 2, newScale.y / 2, -newScale.z / 2), center + new Vector3(newScale.x / 2, newScale.y / 2, -newScale.z / 2), Color.red, 100f);
-        Debug.DrawLine(center + new Vector3(-newScale.x / 2, newScale.y / 2, -newScale.z / 2), center + new Vector3(-newScale.x / 2, newScale.y / 2, newScale.z / 2), Color.red, 100f);
-        Debug.DrawLine(center + new Vector3(newScale.x / 2, newScale.y / 2, newScale.z / 2), center + new Vector3(-newScale.x / 2, newScale.y / 2, newScale.z / 2), Color.red, 100f);
-        Debug.DrawLine(center + new Vector3(newScale.x / 2, newScale.y / 2, newScale.z / 2), center + new Vector3(newScale.x / 2, newScale.y / 2, -newScale.z / 2), Color.red, 100f);
-
-
-
-
-        Debug.Log("isTouchingGroundCheck: " + colliders.Length);
-
-        if (colliders.Length > 0)
-        {
-            returnBool = true;
-        }
-        else
-        {
-            returnBool = false;
-        }
-
-        return returnBool;
-    }
-
-    public bool isVerticalOverloadedCheck()
-    {
-        if (totalSupportedMass > maxSupporatbleMass)
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-
-
-    public bool isVerticalSupportCheck()
-    {
-        bool returnBool = false;
-        if (isTouchingGround)
-        {
-            returnBool = true;
-        }
-        else
-        {
-            bool test = transform.parent.gameObject.GetComponent<BuildingGroup>().HasUninterruptedVerticalSupportToGround(localPosition);
-            Debug.Log("isVerticalSupportCheck: " + test);
-            returnBool = transform.parent.gameObject.GetComponent<BuildingGroup>().HasUninterruptedVerticalSupportToGround(localPosition);
-        }
-
-        return returnBool;
-    }
-
-    public bool isHorizontalSupportCheck()
-    {
-        if (isVerticalSupport)
-        {
-            return false;
-        }
-        else
-        {
-            Dictionary<int, int> verticalSupports = transform.parent.gameObject.GetComponent<BuildingGroup>().FindShortestPathsToVerticalSupports(transform.parent.gameObject.GetComponent<BuildingGroup>().translateCoordinateWithOffset(localPosition), supportDistance);
-
-            if (verticalSupports.Count > 0)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-    }
-
-    void Awake()
-    {
-        currentHealth = maxHealth;
-
-    }
 }

@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b6f66fe6e85cf8b4296041ce26d632a1, type: 3}
+  m_Name: Night
+  m_EditorClassIdentifier: 
+  SidedSkyboxPreset:
+    FrontTex: {fileID: 2800000, guid: 6b40adde8028e4f48963069109fb7e4e, type: 3}
+    BackTex: {fileID: 2800000, guid: 65202a3e890fb4348bc0ae5417abb2ac, type: 3}
+    LeftTex: {fileID: 2800000, guid: fa5a1e718c801344ab648541043bb8ef, type: 3}
+    RightTex: {fileID: 2800000, guid: 5edd0086b7eff514fb1a109ad252e935, type: 3}
+    UpTex: {fileID: 2800000, guid: 08b8ee810963cd84daa2b7813f9038c9, type: 3}
+    DownTex: {fileID: 2800000, guid: e4fda8a11f12a0c46b61edfdebe5b27a, type: 3}
+  FogPreset:
+    FogStart: 0
+    FogEnd: 50
+    FogColor: {r: 0.103773594, g: 0.103773594, b: 0.103773594, a: 1}
+  SunPreset:
+    SunIntensity: 0.8
+    SunColor: {r: 0.254717, g: 0.254717, b: 0.254717, a: 1}
+  LightningIntensityMultiplier: 0.1
+  ReflectionsIntensityMultiplier: 0.1

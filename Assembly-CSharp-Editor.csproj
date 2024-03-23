@@ -1159,6 +1159,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="Assembly-CSharp.csproj" />
+    <ProjectReference Include="AdjustPivot.Editor.csproj" />
     <ProjectReference Include="PackageToolsEditor.csproj" />
     <ProjectReference Include="AstarPathfindingProjectEditor.csproj" />
     <ProjectReference Include="AstarPathfindingProject.csproj" />

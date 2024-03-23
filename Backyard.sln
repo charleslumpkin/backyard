@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AstarPathfindingProject", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Assembly-CSharp", "Assembly-CSharp.csproj", "{CBD65B4F-A7A1-9F7F-2E4C-B06117760877}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdjustPivot.Editor", "AdjustPivot.Editor.csproj", "{0B9A6E46-B719-24EB-267C-1C32B23265F2}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PackageToolsEditor", "PackageToolsEditor.csproj", "{8354AD9C-B01C-64FD-C1B4-B6EAEF1501F5}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Assembly-CSharp-Editor", "Assembly-CSharp-Editor.csproj", "{0084CA65-2C6E-2F78-B536-4F35BEEC462F}"
@@ -29,6 +31,10 @@ Global
 		{CBD65B4F-A7A1-9F7F-2E4C-B06117760877}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CBD65B4F-A7A1-9F7F-2E4C-B06117760877}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CBD65B4F-A7A1-9F7F-2E4C-B06117760877}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0B9A6E46-B719-24EB-267C-1C32B23265F2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0B9A6E46-B719-24EB-267C-1C32B23265F2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0B9A6E46-B719-24EB-267C-1C32B23265F2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0B9A6E46-B719-24EB-267C-1C32B23265F2}.Release|Any CPU.Build.0 = Release|Any CPU
 		{8354AD9C-B01C-64FD-C1B4-B6EAEF1501F5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{8354AD9C-B01C-64FD-C1B4-B6EAEF1501F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8354AD9C-B01C-64FD-C1B4-B6EAEF1501F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
